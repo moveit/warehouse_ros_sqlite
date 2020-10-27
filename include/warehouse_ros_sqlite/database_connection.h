@@ -32,22 +32,25 @@
 #include <warehouse_ros/message_collection.h>
 #include <warehouse_ros_sqlite/utils.h>
 
-
-namespace warehouse_ros_sqlite {
-
-    class DatabaseConnection : public warehouse_ros::DatabaseConnection
+namespace warehouse_ros_sqlite
+{
+class DatabaseConnection : public warehouse_ros::DatabaseConnection
 {
   sqlite3_ptr db_;
   std::string uri_;
+
 public:
+
   /// \brief Set database connection params.
-  bool setParams(const std::string& host, unsigned, float = 60.0) override {
+  bool setParams(const std::string& host, unsigned, float = 60.0) override
+  {
     uri_ = host;
     return true;
   }
 
   /// \brief Set database connection params.
-  bool setTimeout(float) override {
+  bool setTimeout(float) override
+  {
     return true;
   }
 
@@ -67,6 +70,11 @@ public:
 
 protected:
   warehouse_ros::MessageCollectionHelper::Ptr openCollectionHelper(const std::string& db_name,
-                                                            const std::string& collection_name) override;
+                                                                   const std::string& collection_name) override;
+  void check_dbname(const std::string name) const
+  {
+    if (name != schema::DBName)
+      throw std::runtime_error("only main supported");
+  }
 };
-}
+}  // namespace warehouse_ros_sqlite

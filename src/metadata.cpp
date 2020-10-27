@@ -30,7 +30,7 @@
 
 #include <sqlite3.h>
 
-#include <warehouse_ros_sqlite/variant.h>
+#include <warehouse_ros_sqlite/impl/variant.h>
 #include <warehouse_ros_sqlite/utils.h>
 
 template <typename R>
@@ -106,5 +106,20 @@ void warehouse_ros_sqlite::Metadata::append(const std::string& name, sqlite3_stm
       break;
     default:
       throw std::runtime_error("unknown datatype");
+  }
+}
+
+bool warehouse_ros_sqlite::EnsureColumnVisitor::column_exists()
+{
+  return sqlite3_table_column_metadata(db_, schema::DBName, tablename_, colname_.c_str(), nullptr, nullptr, nullptr,
+                                       nullptr, nullptr) == SQLITE_OK;
+}
+
+void warehouse_ros_sqlite::Metadata::ensureColumns(sqlite3* db, const std::string& table_name) const
+{
+  warehouse_ros_sqlite::EnsureColumnVisitor visitor(db, table_name.c_str());
+  for (const auto& kv : data_)
+  {
+    boost::apply_visitor(visitor.setColumnName(schema::MetadataColumnPrefix + std::get<0>(kv)), std::get<1>(kv));
   }
 }

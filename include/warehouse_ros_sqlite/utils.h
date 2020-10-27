@@ -48,12 +48,14 @@ using sqlite3_ptr = std::shared_ptr<sqlite3>;
 
 namespace schema
 {
+constexpr const char* DBName = "main";
 constexpr const char* MetadataColumnPrefix = "M_";
 constexpr const char* DataColumnName = "Data";
 constexpr const char* TableNamePrefix = "T_";
 constexpr const char* MD5TableName = "MessageMD5s";
 constexpr const char* MD5TableIndexColumn = "TableName";
 constexpr const char* MD5TableMD5Column = "MessageMD5";
+constexpr const char* MD5TableDatatypeColumn = "MessageDataType";
 const int DataColumnIndex = 0;
 }  // namespace schema
 

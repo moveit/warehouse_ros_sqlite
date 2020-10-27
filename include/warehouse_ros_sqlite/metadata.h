@@ -34,6 +34,7 @@
 
 extern "C" {
 struct sqlite3_stmt;
+struct sqlite3;
 }
 
 namespace warehouse_ros_sqlite
@@ -54,6 +55,7 @@ public:
   std::set<std::string> lookupFieldNames() const override;
   void append(const std::string& name, sqlite3_stmt* stmt, int col);
   const auto& data() const { return data_; }
+  void ensureColumns(sqlite3 *db, const std::string& table_name) const;
 
 private:
   // ordered map for reproducible iterating

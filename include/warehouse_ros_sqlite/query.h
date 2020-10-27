@@ -59,7 +59,8 @@ public:
   void appendRangeInclusive(const std::string& name, const double lower, const double upper) override;
   void appendRangeInclusive(const std::string& name, const int lower, const int upper) override;
 
-  sqlite3_stmt_ptr prepare(sqlite3* db_conn, const std::string& intro, const std::string& outro = "") const;
+  sqlite3_stmt_ptr prepare(sqlite3* db_conn, const std::string& intro, const std::string& outro = "",
+                           int bind_start_col = 1) const;
 
 private:
   template <typename T>

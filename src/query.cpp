@@ -32,30 +32,16 @@
 #include <iomanip>
 #include <boost/variant/static_visitor.hpp>
 #include <warehouse_ros/exceptions.h>
-#include <warehouse_ros_sqlite/variant.h>
-
-int warehouse_ros_sqlite::BindVisitor::operator()(int i)
-{
-  return sqlite3_bind_int64(stmt_, idx_++, i);
-}
-int warehouse_ros_sqlite::BindVisitor::operator()(double d)
-{
-  return sqlite3_bind_double(stmt_, idx_++, d);
-}
-int warehouse_ros_sqlite::BindVisitor::operator()(const std::string& s)
-{
-  return sqlite3_bind_blob64(stmt_, idx_++, s.data(), s.size(), SQLITE_STATIC);
-}
-int warehouse_ros_sqlite::BindVisitor::operator()(std::nullptr_t)
-{
-  return sqlite3_bind_null(stmt_, idx_++);
-}
+#include <warehouse_ros_sqlite/impl/variant.h>
+#include <cassert>
 
 warehouse_ros_sqlite::Query::Query()
 {
 }
 
-warehouse_ros_sqlite::sqlite3_stmt_ptr warehouse_ros_sqlite::Query::prepare(sqlite3* db_conn, const std::string& intro, const std::string& outro ) const
+warehouse_ros_sqlite::sqlite3_stmt_ptr warehouse_ros_sqlite::Query::prepare(sqlite3* db_conn, const std::string& intro,
+                                                                            const std::string& outro,
+                                                                            int bind_start_col) const
 {
   sqlite3_stmt* stmt = nullptr;
   const auto query = intro + query_.str() + outro + ";";
@@ -65,12 +51,9 @@ warehouse_ros_sqlite::sqlite3_stmt_ptr warehouse_ros_sqlite::Query::prepare(sqli
   }
   warehouse_ros_sqlite::sqlite3_stmt_ptr ans(stmt);
 
-  if (sqlite3_bind_parameter_count(stmt) != values_.size())
-  {
-    throw warehouse_ros::WarehouseRosException("Prepare query failed, parameter count mismatch");
-  }
+  assert(static_cast<size_t>(sqlite3_bind_parameter_count(stmt)) == (values_.size() + bind_start_col - 1));
 
-  warehouse_ros_sqlite::BindVisitor visitor(stmt);
+  warehouse_ros_sqlite::BindVisitor visitor(stmt, bind_start_col);
   for (const auto& value : values_)
   {
     if (boost::apply_visitor(visitor, value) != SQLITE_OK)

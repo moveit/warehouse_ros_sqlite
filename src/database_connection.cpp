@@ -64,6 +64,7 @@ void warehouse_ros_sqlite::DatabaseConnection::dropDatabase(const std::string& d
 std::string warehouse_ros_sqlite::DatabaseConnection::messageType(const std::string& db_name,
                                                                   const std::string& collection_name)
 {
+  check_dbname(db_name);
 }
 
 warehouse_ros::MessageCollectionHelper::Ptr

@@ -31,10 +31,8 @@
 
 #include <boost/variant.hpp>
 #include <string>
-
-extern "C" {
-struct sqlite3_stmt;
-}
+#include <sstream>
+#include <sqlite3.h>
 
 namespace warehouse_ros_sqlite
 {
@@ -47,11 +45,73 @@ public:
   BindVisitor(sqlite3_stmt* stmt, int start_idx = 1) : stmt_(stmt), idx_(start_idx)
   {
   }
-  int operator()(int i);
-  int operator()(double d);
-  int operator()(const std::string& s);
-  int operator()(std::nullptr_t);
-  int get_total_binds() const { return idx_ - 1; }
+  int operator()(int i)
+  {
+    return sqlite3_bind_int64(stmt_, idx_++, i);
+  }
+  int operator()(double d)
+  {
+    return sqlite3_bind_double(stmt_, idx_++, d);
+  }
+  int operator()(const std::string& s)
+  {
+    return sqlite3_bind_blob64(stmt_, idx_++, s.data(), s.size(), SQLITE_STATIC);
+  }
+  int operator()(std::nullptr_t)
+  {
+    return sqlite3_bind_null(stmt_, idx_++);
+  }
+  int get_total_binds() const
+  {
+    return idx_ - 1;
+  }
+};
+
+class EnsureColumnVisitor : boost::static_visitor<>
+{
+  sqlite3* db_;
+  const char* tablename_;
+  std::string colname_;
+  bool column_exists();
+  void add_column(const char* datatype)
+  {
+    std::ostringstream query_builder;
+    query_builder << "ALTER TABLE " << tablename_ << " ADD " << colname_ << datatype << ";";
+    if (sqlite3_exec(db_, query_builder.str().c_str(), nullptr, nullptr, nullptr) != SQLITE_DONE)
+    {
+      throw std::runtime_error("could not create column");
+    }
+  }
+
+public:
+  EnsureColumnVisitor(sqlite3* db, const char* tablename) : db_(db), tablename_(tablename)
+  {
+  }
+  void operator()(int)
+  {
+    if (!column_exists())
+      add_column("INTEGER");
+  }
+  void operator()(double)
+  {
+    if (!column_exists())
+      add_column("FLOAT");
+  }
+  void operator()(const std::string&)
+  {
+    if (!column_exists())
+      add_column("BLOB");
+  }
+  void operator()(std::nullptr_t)
+  {
+    if (!column_exists())
+      throw std::runtime_error("not implemented");
+  }
+  EnsureColumnVisitor& setColumnName(std::string&& c)
+  {
+    colname_ = std::move(c);
+    return *this;
+  }
 };
 
 namespace detail

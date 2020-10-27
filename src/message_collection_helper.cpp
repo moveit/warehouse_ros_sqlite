@@ -31,11 +31,19 @@
 #include <warehouse_ros_sqlite/query.h>
 #include <warehouse_ros_sqlite/metadata.h>
 #include <warehouse_ros_sqlite/result_iteration_helper.h>
-#include <warehouse_ros_sqlite/variant.h>
+#include <warehouse_ros_sqlite/impl/variant.h>
 
 #include <boost/make_shared.hpp>
 #include <sqlite3.h>
 #include <sstream>
+
+namespace
+{
+std::string getMetadataColumn(const std::string& c)
+{
+  return warehouse_ros_sqlite::schema::MetadataColumnPrefix + c;
+}
+}  // namespace
 
 std::string warehouse_ros_sqlite::MessageCollectionHelper::find_md5sum()
 {
@@ -69,26 +77,30 @@ bool warehouse_ros_sqlite::MessageCollectionHelper::initialize(const std::string
     return current_md5 == md5;
   }
   std::ostringstream query_builder;
-  query_builder << "BEGIN TRANSACTION; CREATE TABLE " << TableNamePrefix << name_ << "; INSERT INTO " << MD5TableName
-                << " ( " << MD5TableIndexColumn << " , " << MD5TableMD5Column << ") VALUES (" << name_ << " , " << md5
+  query_builder << "BEGIN TRANSACTION; CREATE TABLE " << getTableName() << "(" << schema::DataColumnName
+                << "BLOB NOT NULL, " << schema::MetadataColumnPrefix << "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                << schema::MetadataColumnPrefix << "creation_time INTEGER)"
+                << "; INSERT INTO " << MD5TableName << " ( " << MD5TableIndexColumn << " , " << MD5TableMD5Column
+                << " , " << MD5TableDatatypeColumn << ") VALUES (" << name_ << " , " << md5 << " , " << datatype
                 << "); COMMIT TRANSACTION;";
   const auto query = query_builder.str();
   return sqlite3_exec(db_.get(), query.c_str(), nullptr, nullptr, nullptr) == SQLITE_OK;
 }
+
 void warehouse_ros_sqlite::MessageCollectionHelper::insert(char* msg, size_t msg_size,
                                                            warehouse_ros::Metadata::ConstPtr metadata)
 {
   auto meta = reinterpret_cast<const warehouse_ros_sqlite::Metadata*>(metadata.get());
   if (!meta || !msg || !msg_size)
     throw std::runtime_error("");
+  meta->ensureColumns(db_.get(), getTableName());
   std::ostringstream query;
-  query << "INSERT INTO " << schema::TableNamePrefix << name_ << "(";
-  query << schema::DataColumnName << ",";
+  query << "INSERT INTO " << getTableName() << "(" << schema::DataColumnName;
 
   const auto& data = meta->data();
   for (const auto& kv : data)
   {
-    query << ", " << std::get<0>(kv);
+    query << ", " << getMetadataColumn(std::get<0>(kv));
   }
   query << ") VALUES ( ? ";
   for (size_t i = 0; i < data.size(); ++i)
@@ -104,7 +116,7 @@ void warehouse_ros_sqlite::MessageCollectionHelper::insert(char* msg, size_t msg
   if (sqlite3_bind_blob(stmt, 1, msg, msg_size, SQLITE_STATIC) != SQLITE_OK)
     throw std::runtime_error("");
   warehouse_ros_sqlite::BindVisitor visitor(stmt, 2);
-  for (const auto& kv: data)
+  for (const auto& kv : data)
   {
     if (boost::apply_visitor(visitor, std::get<1>(kv)) != SQLITE_OK)
       throw std::runtime_error("");
@@ -112,8 +124,9 @@ void warehouse_ros_sqlite::MessageCollectionHelper::insert(char* msg, size_t msg
 
   assert(sqlite3_bind_parameter_count(stmt) == visitor.get_total_binds());
   if (sqlite3_step(stmt) != SQLITE_DONE)
-      throw std::runtime_error("");
+    throw std::runtime_error("");
 }
+
 warehouse_ros::ResultIteratorHelper::Ptr
 warehouse_ros_sqlite::MessageCollectionHelper::query(warehouse_ros::Query::ConstPtr query, const std::string& sort_by,
                                                      bool ascending) const
@@ -123,14 +136,11 @@ warehouse_ros_sqlite::MessageCollectionHelper::query(warehouse_ros::Query::Const
   {
     outro += " ORDER BY " + sort_by;
   }
-  if (!ascending)
-  {
-    outro += " DESC";
-  }
+  outro += ascending ? " ASC" : " DESC";
   auto query_ptr = dynamic_cast<const warehouse_ros_sqlite::Query*>(query.get());
   assert(query_ptr);
   std::ostringstream intro;
-  intro << "SELECT * FROM " << schema::TableNamePrefix << name_ << " WHERE ";
+  intro << "SELECT * FROM " << getTableName() << " WHERE ";
   auto stmt = query_ptr->prepare(db_.get(), intro.str(), outro);
   switch (sqlite3_step(stmt.get()))
   {
@@ -142,20 +152,77 @@ warehouse_ros_sqlite::MessageCollectionHelper::query(warehouse_ros::Query::Const
   }
   return boost::make_shared<warehouse_ros_sqlite::ResultIteratorHelper>(std::move(stmt));
 }
+
 unsigned warehouse_ros_sqlite::MessageCollectionHelper::removeMessages(warehouse_ros::Query::ConstPtr query)
 {
   auto pquery = dynamic_cast<warehouse_ros_sqlite::Query const*>(query.get());
   if (!pquery)
     throw std::runtime_error("Query was not initialized by createQuery()");
-  auto stmt = pquery->prepare(db_.get(), "DELETE FROM " + name_ + "WHERE ");
+  auto stmt = pquery->prepare(db_.get(), "DELETE FROM " + getTableName() + " WHERE ");
   return sqlite3_changes(db_.get());
 }
+
+namespace
+{
+template <typename It>
+void comma_concat_meta_column_names(std::ostringstream& buf, It it, It end)
+{
+  if (it == end)
+    return;
+  buf << getMetadataColumn(it->first);
+  it++;
+  while (it != end)
+  {
+    buf << " = ?, " << getMetadataColumn(it->first);
+    it++;
+  }
+  buf << " = ?";
+}
+}  // namespace
+
 void warehouse_ros_sqlite::MessageCollectionHelper::modifyMetadata(warehouse_ros::Query::ConstPtr q,
                                                                    warehouse_ros::Metadata::ConstPtr m)
 {
+  auto query = dynamic_cast<const warehouse_ros_sqlite::Query*>(q.get());
+  auto metadata = dynamic_cast<const warehouse_ros_sqlite::Metadata*>(m.get());
+  if (!query || !metadata)
+    throw std::runtime_error("");
+  metadata->ensureColumns(db_.get(), getTableName());
+  const int mt_count = metadata->data().size();
+  if (mt_count == 0)
+    return;
+
+  std::ostringstream query_builder;
+  query_builder << "UPDATE " << getTableName() << " SET ";
+
+  comma_concat_meta_column_names(query_builder, metadata->data().begin(), metadata->data().end());
+  query_builder << " WHERE ";
+  auto stmt = query->prepare(db_.get(), query_builder.str(), "", mt_count + 1);
+  warehouse_ros_sqlite::BindVisitor visitor(stmt.get(), 1);
+  for (const auto& kv : metadata->data())
+  {
+    if (boost::apply_visitor(visitor, std::get<1>(kv)) != SQLITE_OK)
+      throw std::runtime_error("");
+  }
+
+  if (sqlite3_step(stmt.get()) != SQLITE_DONE)
+    throw std::runtime_error("");
 }
+
 unsigned warehouse_ros_sqlite::MessageCollectionHelper::count()
 {
+  const std::string query = "SELECT COUNT(*) FROM " + getTableName() + ";";
+  sqlite3_stmt* stmt = nullptr;
+  if (sqlite3_prepare_v2(db_.get(), query.c_str(), query.size() + 1, &stmt, nullptr) != SQLITE_OK)
+    throw std::runtime_error("");
+  const warehouse_ros_sqlite::sqlite3_stmt_ptr stmt_guard(stmt);
+
+  if (sqlite3_step(stmt) != SQLITE_ROW)
+    throw std::runtime_error("");
+
+  assert(sqlite3_column_count(stmt) == 1);
+
+  return sqlite3_column_int(stmt, 1);
 }
 warehouse_ros::Query::Ptr warehouse_ros_sqlite::MessageCollectionHelper::createQuery() const
 {

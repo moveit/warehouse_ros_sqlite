@@ -37,21 +37,34 @@ class MessageCollectionHelper : public warehouse_ros::MessageCollectionHelper
 {
   sqlite3_ptr db_;
   std::string name_;
+
 public:
   MessageCollectionHelper() = default;
-  MessageCollectionHelper(sqlite3_ptr db, const std::string& name) : db_(std::move(db)), name_(name) {}
+  MessageCollectionHelper(sqlite3_ptr db, const std::string& name) : db_(std::move(db)), name_(name)
+  {
+  }
   bool initialize(const std::string& datatype, const std::string& md5) override;
   void insert(char* msg, size_t msg_size, warehouse_ros::Metadata::ConstPtr metadata) override;
   warehouse_ros::ResultIteratorHelper::Ptr query(warehouse_ros::Query::ConstPtr query, const std::string& sort_by = "",
-                                  bool ascending = true) const override;
+                                                 bool ascending = true) const override;
   unsigned removeMessages(warehouse_ros::Query::ConstPtr query) override;
   void modifyMetadata(warehouse_ros::Query::ConstPtr q, warehouse_ros::Metadata::ConstPtr m) override;
   unsigned count() override;
   warehouse_ros::Query::Ptr createQuery() const override;
   warehouse_ros::Metadata::Ptr createMetadata() const override;
-  std::string collectionName() const override { return name_; }
+  std::string collectionName() const override
+  {
+    return name_;
+  }
+
 private:
   std::string find_md5sum();
+  std::string getTableName() const
+  {
+    return schema::TableNamePrefix + name_;
+  }
+
+  bool column_exists(const char *colname);
 };
 
 }  // namespace warehouse_ros_sqlite
