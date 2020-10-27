@@ -1,0 +1,30 @@
+<package format="2">
+  <name>warehouse_ros_sqlite</name>
+  <version>0.0.0</version>
+  <description>
+    Implementation of warehouse_ros for sqlite
+  </description>
+  <author>Bjarne von Horn</author>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt Release Team</maintainer>
+
+  <license>BSD</license>
+  <url>http://ros.org/wiki/warehouse_ros</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>libsqlite3-dev</build_depend>
+
+  <depend>warehouse_ros</depend>
+  <depend>roscpp</depend>
+  <depend>rostime</depend>
+  <depend>std_msgs</depend>
+  <depend>class_loader</depend>
+
+  <test_depend>rostest</test_depend>
+
+  <exec_depend>sqlite3</exec_depend>
+
+  <export>
+    <warehouse_ros plugin="${prefix}/sqlite_database_connection_plugin_description.xml"/>
+  </export>
+</package>
