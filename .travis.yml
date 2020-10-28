@@ -17,6 +17,7 @@ env:
     - ROS_REPO=ros-testing
     - CXXFLAGS="-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls"
     - WARNINGS_OK=false
+    - UPSTREAM_WORKSPACE=warehouse_ros.rosinstall
 
 jobs:
   fast_finish: true
