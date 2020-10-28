@@ -48,3 +48,8 @@ install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
+
+if(CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(DBConnection test/DatabaseConnection.cpp)
+  target_link_libraries(DBConnection ${PROJECT_NAME})
+endif()
