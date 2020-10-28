@@ -40,7 +40,6 @@ class DatabaseConnection : public warehouse_ros::DatabaseConnection
   std::string uri_;
 
 public:
-
   /// \brief Set database connection params.
   bool setParams(const std::string& host, unsigned, float = 60.0) override
   {

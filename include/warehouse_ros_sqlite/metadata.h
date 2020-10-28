@@ -54,8 +54,11 @@ public:
   bool lookupField(const std::string& name) const override;
   std::set<std::string> lookupFieldNames() const override;
   void append(const std::string& name, sqlite3_stmt* stmt, int col);
-  const auto& data() const { return data_; }
-  void ensureColumns(sqlite3 *db, const std::string& table_name) const;
+  const auto& data() const
+  {
+    return data_;
+  }
+  void ensureColumns(sqlite3* db, const std::string& table_name) const;
 
 private:
   // ordered map for reproducible iterating

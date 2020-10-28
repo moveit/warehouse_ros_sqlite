@@ -61,7 +61,7 @@ public:
   {
     return sqlite3_bind_null(stmt_, idx_++);
   }
-  int get_total_binds() const
+  int getTotalBinds() const
   {
     return idx_ - 1;
   }
@@ -72,8 +72,8 @@ class EnsureColumnVisitor : boost::static_visitor<>
   sqlite3* db_;
   const char* tablename_;
   std::string colname_;
-  bool column_exists();
-  void add_column(const char* datatype)
+  bool columnExists();
+  void addColumn(const char* datatype)
   {
     std::ostringstream query_builder;
     query_builder << "ALTER TABLE " << tablename_ << " ADD " << colname_ << " " << datatype << ";";
@@ -87,24 +87,24 @@ public:
   EnsureColumnVisitor(sqlite3* db, const char* tablename) : db_(db), tablename_(tablename)
   {
   }
-  void operator()(int)
+  void operator()(int /*unused*/)
   {
-    if (!column_exists())
-      add_column("INTEGER");
+    if (!columnExists())
+      addColumn("INTEGER");
   }
-  void operator()(double)
+  void operator()(double /*unused*/)
   {
-    if (!column_exists())
-      add_column("FLOAT");
+    if (!columnExists())
+      addColumn("FLOAT");
   }
-  void operator()(const std::string&)
+  void operator()(const std::string& /*unused*/)
   {
-    if (!column_exists())
-      add_column("BLOB");
+    if (!columnExists())
+      addColumn("BLOB");
   }
   void operator()(std::nullptr_t)
   {
-    if (!column_exists())
+    if (!columnExists())
       throw std::runtime_error("not implemented");
   }
   EnsureColumnVisitor& setColumnName(std::string&& c)
@@ -117,7 +117,7 @@ public:
 namespace detail
 {
 template <typename R, typename T>
-R NullValueGet(T)
+R NullValueGet(T /*unused*/)
 {
   throw boost::bad_get();
 }

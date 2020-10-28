@@ -66,9 +66,9 @@ private:
   template <typename T>
   void doappend(const std::string& name, const char* op, T val)
   {
-    values_.emplace_back(val);
-    if (values_.size() > 0)
+    if (!values_.empty())
       query_ << " AND ";
+    values_.emplace_back(val);
     query_ << name << op << '?';
   }
   std::vector<Variant> values_;

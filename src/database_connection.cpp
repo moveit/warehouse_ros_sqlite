@@ -47,7 +47,7 @@ bool warehouse_ros_sqlite::DatabaseConnection::connect()
     return false;
   }
   db_.reset(s, warehouse_ros_sqlite::sqlite3_delete);
-  init_db();
+  initDb();
   return true;
 }
 
@@ -61,7 +61,7 @@ bool warehouse_ros_sqlite::DatabaseConnection::isConnected()
 /// A DbClientConnection exception will be thrown if the database is not connected.
 void warehouse_ros_sqlite::DatabaseConnection::dropDatabase(const std::string& db_name)
 {
-  check_dbname(db_name);
+  checkDbname(db_name);
   // TODO
 }
 
@@ -69,12 +69,12 @@ void warehouse_ros_sqlite::DatabaseConnection::dropDatabase(const std::string& d
 std::string warehouse_ros_sqlite::DatabaseConnection::messageType(const std::string& db_name,
                                                                   const std::string& collection_name)
 {
-  check_dbname(db_name);
+  checkDbname(db_name);
   using namespace warehouse_ros_sqlite::schema;
 
   std::ostringstream query_builder;
-  query_builder << "SELECT " << MD5TableDatatypeColumn << " FROM " << MD5TableName << " WHERE " << MD5TableIndexColumn
-                << " = ?;";
+  query_builder << "SELECT " << M_D5_TABLE_DATATYPE_COLUMN << " FROM " << M_D5_TABLE_NAME << " WHERE "
+                << M_D5_TABLE_INDEX_COLUMN << " = ?;";
   const auto query = query_builder.str();
   sqlite3_stmt* stmt = nullptr;
   if (sqlite3_prepare_v2(db_.get(), query.c_str(), query.size() + 1, &stmt, nullptr) != SQLITE_OK)
@@ -95,12 +95,12 @@ std::string warehouse_ros_sqlite::DatabaseConnection::messageType(const std::str
   return std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)), sqlite3_column_bytes(stmt, 0));
 }
 
-void warehouse_ros_sqlite::DatabaseConnection::init_db()
+void warehouse_ros_sqlite::DatabaseConnection::initDb()
 {
   std::ostringstream query_builder;
-  query_builder << "CREATE TABLE IF NOT EXISTS " << schema::MD5TableName << " ( " << schema::MD5TableIndexColumn
-                << " TEXT PRIMARY KEY, " << schema::MD5TableMD5Column << " BLOB NOT NULL, "
-                << schema::MD5TableDatatypeColumn << " TEXT NOT NULL);";
+  query_builder << "CREATE TABLE IF NOT EXISTS " << schema::M_D5_TABLE_NAME << " ( " << schema::M_D5_TABLE_INDEX_COLUMN
+                << " TEXT PRIMARY KEY, " << schema::M_D5_TABLE_M_D5_COLUMN << " BLOB NOT NULL, "
+                << schema::M_D5_TABLE_DATATYPE_COLUMN << " TEXT NOT NULL);";
   const auto query = query_builder.str();
   ROS_DEBUG_NAMED("warehouse_ros_sqlite", "MD5 table init: %s", query.c_str());
   if (sqlite3_exec(db_.get(), query.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
@@ -111,11 +111,11 @@ warehouse_ros::MessageCollectionHelper::Ptr
 warehouse_ros_sqlite::DatabaseConnection::openCollectionHelper(const std::string& db_name,
                                                                const std::string& collection_name)
 {
-  check_dbname(db_name);
+  checkDbname(db_name);
   return boost::make_shared<warehouse_ros_sqlite::MessageCollectionHelper>(db_, collection_name);
 }
 
-void warehouse_ros_sqlite::sqlite3_stmt_deleter::operator()(sqlite3_stmt* stmt) const
+void warehouse_ros_sqlite::Sqlite3StmtDeleter::operator()(sqlite3_stmt* stmt) const
 {
   sqlite3_finalize(stmt);
 }

@@ -54,10 +54,10 @@ bool warehouse_ros_sqlite::ResultIteratorHelper::hasData() const
 {
   if (!stmt_)
     return false;
-  switch (sqlite3_column_type(stmt_.get(), schema::DataColumnIndex))
+  switch (sqlite3_column_type(stmt_.get(), schema::DATA_COLUMN_INDEX))
   {
     case SQLITE_BLOB:
-      return sqlite3_column_bytes(stmt_.get(), schema::DataColumnIndex) != 0;
+      return sqlite3_column_bytes(stmt_.get(), schema::DATA_COLUMN_INDEX) != 0;
     case SQLITE_NULL:
       return false;
     default:
@@ -80,8 +80,8 @@ std::string warehouse_ros_sqlite::ResultIteratorHelper::message() const
 {
   if (!hasData())
     return std::string();
-  return std::string(reinterpret_cast<const char*>(sqlite3_column_blob(stmt_.get(), schema::DataColumnIndex)),
-                     sqlite3_column_bytes(stmt_.get(), schema::DataColumnIndex));
+  return std::string(reinterpret_cast<const char*>(sqlite3_column_blob(stmt_.get(), schema::DATA_COLUMN_INDEX)),
+                     sqlite3_column_bytes(stmt_.get(), schema::DATA_COLUMN_INDEX));
 }
 
 namespace
@@ -92,13 +92,13 @@ int constexpr strlength(const char* str)
 }
 }  // namespace
 
-void warehouse_ros_sqlite::ResultIteratorHelper::init_metadata_cols()
+void warehouse_ros_sqlite::ResultIteratorHelper::initMetadataCols()
 {
-  constexpr int max_length = strlength(schema::MetadataColumnPrefix);
+  constexpr int max_length = strlength(schema::METADATA_COLUMN_PREFIX);
   for (int i = 0; i < sqlite3_column_count(stmt_.get()); ++i)
   {
     const char* col_name = sqlite3_column_name(stmt_.get(), i);
-    if (std::strncmp(schema::MetadataColumnPrefix, col_name, max_length) == 0)
+    if (std::strncmp(schema::METADATA_COLUMN_PREFIX, col_name, max_length) == 0)
     {
       metadata_cols_.emplace_back(col_name + max_length, i);
     }

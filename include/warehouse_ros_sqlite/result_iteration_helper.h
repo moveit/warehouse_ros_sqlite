@@ -37,14 +37,13 @@ class ResultIteratorHelper : public warehouse_ros::ResultIteratorHelper
 {
   sqlite3_stmt_ptr stmt_;
   std::vector<std::pair<std::string, int>> metadata_cols_;
-  void init_metadata_cols();
+  void initMetadataCols();
 
 public:
   ResultIteratorHelper() = default;
-  ResultIteratorHelper(sqlite3_stmt_ptr stmt)
-    : stmt_(std::move(stmt))
+  ResultIteratorHelper(sqlite3_stmt_ptr stmt) : stmt_(std::move(stmt))
   {
-    init_metadata_cols();
+    initMetadataCols();
   }
   bool next() override;
   bool hasData() const override;

@@ -37,26 +37,26 @@ struct sqlite3;
 
 namespace warehouse_ros_sqlite
 {
-struct sqlite3_stmt_deleter
+struct Sqlite3StmtDeleter
 {
   void operator()(sqlite3_stmt* stmt) const;
 };
 void sqlite3_delete(sqlite3* db);
 
-using sqlite3_stmt_ptr = std::unique_ptr<sqlite3_stmt, sqlite3_stmt_deleter>;
+using sqlite3_stmt_ptr = std::unique_ptr<sqlite3_stmt, Sqlite3StmtDeleter>;
 using sqlite3_ptr = std::shared_ptr<sqlite3>;
 
 namespace schema
 {
-constexpr const char* DBName = "main";
-constexpr const char* MetadataColumnPrefix = "M_";
-constexpr const char* DataColumnName = "Data";
-constexpr const char* TableNamePrefix = "T_";
-constexpr const char* MD5TableName = "MessageMD5s";
-constexpr const char* MD5TableIndexColumn = "TableName";
-constexpr const char* MD5TableMD5Column = "MessageMD5";
-constexpr const char* MD5TableDatatypeColumn = "MessageDataType";
-const int DataColumnIndex = 0;
+constexpr const char* DB_NAME = "main";
+constexpr const char* METADATA_COLUMN_PREFIX = "M_";
+constexpr const char* DATA_COLUMN_NAME = "Data";
+constexpr const char* TABLE_NAME_PREFIX = "T_";
+constexpr const char* M_D5_TABLE_NAME = "MessageMD5s";
+constexpr const char* M_D5_TABLE_INDEX_COLUMN = "TableName";
+constexpr const char* M_D5_TABLE_M_D5_COLUMN = "MessageMD5";
+constexpr const char* M_D5_TABLE_DATATYPE_COLUMN = "MessageDataType";
+const int DATA_COLUMN_INDEX = 0;
 }  // namespace schema
 
 }  // namespace warehouse_ros_sqlite

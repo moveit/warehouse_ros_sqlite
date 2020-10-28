@@ -109,9 +109,9 @@ void warehouse_ros_sqlite::Metadata::append(const std::string& name, sqlite3_stm
   }
 }
 
-bool warehouse_ros_sqlite::EnsureColumnVisitor::column_exists()
+bool warehouse_ros_sqlite::EnsureColumnVisitor::columnExists()
 {
-  return sqlite3_table_column_metadata(db_, schema::DBName, tablename_, colname_.c_str(), nullptr, nullptr, nullptr,
+  return sqlite3_table_column_metadata(db_, schema::DB_NAME, tablename_, colname_.c_str(), nullptr, nullptr, nullptr,
                                        nullptr, nullptr) == SQLITE_OK;
 }
 
@@ -120,6 +120,6 @@ void warehouse_ros_sqlite::Metadata::ensureColumns(sqlite3* db, const std::strin
   warehouse_ros_sqlite::EnsureColumnVisitor visitor(db, table_name.c_str());
   for (const auto& kv : data_)
   {
-    boost::apply_visitor(visitor.setColumnName(schema::MetadataColumnPrefix + std::get<0>(kv)), std::get<1>(kv));
+    boost::apply_visitor(visitor.setColumnName(schema::METADATA_COLUMN_PREFIX + std::get<0>(kv)), std::get<1>(kv));
   }
 }

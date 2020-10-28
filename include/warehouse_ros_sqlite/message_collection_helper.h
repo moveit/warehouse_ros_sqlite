@@ -58,13 +58,13 @@ public:
   }
 
 private:
-  std::string find_md5sum();
+  std::string findMd5sum();
   std::string getTableName() const
   {
-    return schema::TableNamePrefix + name_;
+    return schema::TABLE_NAME_PREFIX + name_;
   }
 
-  bool column_exists(const char *colname);
+  bool columnExists(const char* colname);
 };
 
 }  // namespace warehouse_ros_sqlite
