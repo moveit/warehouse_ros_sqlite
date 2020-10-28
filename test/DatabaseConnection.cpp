@@ -133,6 +133,90 @@ TEST_F(ConnectionTest, MetadataNullValue)
                (list[1]->lookupInt("y") == 0 && list[0]->lookupInt("y") == 8)));
 }
 
+TEST_F(ConnectionTest, UniqueID)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll = conn_->openCollection<V>("main", "coll");
+  auto meta1 = coll.createMetadata();
+  meta1->append("x", 3);
+
+  coll.insert(V(), meta1);
+  coll.insert(V(), meta1);
+
+  auto query = coll.createQuery();
+  query->append("x", 3);
+
+  const auto list = coll.queryList(query);
+  ASSERT_EQ(list.size(), size_t(2));
+  ASSERT_NE(list[0]->lookupInt("id"), list[1]->lookupInt("id"));
+}
+
+TEST_F(ConnectionTest, OverwriteMetadata)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll = conn_->openCollection<V>("main", "coll");
+  auto meta1 = coll.createMetadata();
+  meta1->append("x", 3);
+
+  const int y1 = 8;
+  meta1->append("y", y1);
+
+  V v1, v2;
+  v1.x = 3.0;
+  v1.y = 9.0;
+  v2.x = 5.0;
+  v2.y = 7.0;
+
+  coll.insert(v1, meta1);
+  meta1->append("y", 6);
+  coll.insert(v2, meta1);
+
+  auto query = coll.createQuery();
+  query->append("y", y1);
+
+  const auto list = coll.queryList(query);
+  ASSERT_EQ(list.size(), size_t(1));
+  EXPECT_EQ(list[0]->lookupInt("x"), 3);
+  EXPECT_EQ(list[0]->lookupInt("y"), y1);
+  EXPECT_EQ(list[0]->y, 9.0);
+}
+
+TEST_F(ConnectionTest, ModifyMetadata)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll = conn_->openCollection<V>("main", "coll");
+  auto meta1 = coll.createMetadata();
+
+  V v1, v2;
+  v1.x = 3.0;
+  v2.x = 5.0;
+  const int x1 = 8;
+
+  meta1->append("x", x1);
+  meta1->append("y", "one");
+  coll.insert(v1, meta1);
+
+  auto meta2 = coll.createMetadata();
+  meta2->append("x", 2);
+  meta2->append("y", "one");
+  coll.insert(v2, meta2);
+
+  auto modify_query = coll.createQuery();
+  modify_query->append("x", x1);
+  auto meta_modify = coll.createMetadata();
+  meta_modify->append("y", "two");
+  coll.modifyMetadata(modify_query, meta_modify);
+
+  auto query = coll.createQuery();
+  query->append("y", "two");
+  const auto list = coll.queryList(query);
+
+  ASSERT_EQ(list.size(), size_t(1));
+  EXPECT_EQ(list[0]->lookupInt("x"), x1);
+  EXPECT_EQ(list[0]->lookupString("y"), "two");
+  EXPECT_EQ(list[0]->x, 3.0);
+}
+
 int main(int argc, char** argv)
 {
   ros::Time::init();

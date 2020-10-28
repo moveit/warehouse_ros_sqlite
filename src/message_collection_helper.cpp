@@ -163,7 +163,11 @@ warehouse_ros_sqlite::MessageCollectionHelper::query(warehouse_ros::Query::Const
   auto query_ptr = dynamic_cast<const warehouse_ros_sqlite::Query*>(query.get());
   assert(query_ptr);
   std::ostringstream intro;
-  intro << "SELECT * FROM " << getTableName() << " WHERE ";
+  intro << "SELECT * FROM " << getTableName();
+  if (!query_ptr->empty())
+  {
+    intro << " WHERE ";
+  }
   auto stmt = query_ptr->prepare(db_.get(), intro.str(), outro);
   switch (sqlite3_step(stmt.get()))
   {

@@ -61,6 +61,10 @@ public:
 
   sqlite3_stmt_ptr prepare(sqlite3* db_conn, const std::string& intro, const std::string& outro = "",
                            int bind_start_col = 1) const;
+  bool empty() const
+  {
+    return values_.empty();
+  }
 
 private:
   template <typename T>
