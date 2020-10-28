@@ -137,9 +137,8 @@ warehouse_ros_sqlite::MessageCollectionHelper::query(warehouse_ros::Query::Const
   std::string outro;
   if (!sort_by.empty())
   {
-    outro += " ORDER BY " + sort_by;
+    outro += " ORDER BY " + sort_by + (ascending ? " ASC" : " DESC");
   }
-  outro += ascending ? " ASC" : " DESC";
   auto query_ptr = dynamic_cast<const warehouse_ros_sqlite::Query*>(query.get());
   assert(query_ptr);
   std::ostringstream intro;
@@ -162,6 +161,10 @@ unsigned warehouse_ros_sqlite::MessageCollectionHelper::removeMessages(warehouse
   if (!pquery)
     throw std::runtime_error("Query was not initialized by createQuery()");
   auto stmt = pquery->prepare(db_.get(), "DELETE FROM " + getTableName() + " WHERE ");
+  if (sqlite3_step(stmt.get()) != SQLITE_DONE)
+  {
+    throw std::runtime_error("");
+  }
   return sqlite3_changes(db_.get());
 }
 

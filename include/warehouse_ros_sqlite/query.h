@@ -69,7 +69,7 @@ private:
     if (!values_.empty())
       query_ << " AND ";
     values_.emplace_back(val);
-    query_ << name << op << '?';
+    query_ << schema::METADATA_COLUMN_PREFIX << name << op << '?';
   }
   std::vector<Variant> values_;
   std::stringstream query_;

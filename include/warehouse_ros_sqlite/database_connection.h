@@ -41,14 +41,14 @@ class DatabaseConnection : public warehouse_ros::DatabaseConnection
 
 public:
   /// \brief Set database connection params.
-  bool setParams(const std::string& host, unsigned, float = 60.0) override
+  bool setParams(const std::string& host, unsigned /*port*/, float /*timeout*/ = 60.0) override
   {
     uri_ = host;
     return true;
   }
 
   /// \brief Set database connection params.
-  bool setTimeout(float) override
+  bool setTimeout(float /*timeout*/) override
   {
     return true;
   }
@@ -70,7 +70,7 @@ public:
 protected:
   warehouse_ros::MessageCollectionHelper::Ptr openCollectionHelper(const std::string& db_name,
                                                                    const std::string& collection_name) override;
-  void checkDbname(const std::string name) const
+  void checkDbname(const std::string& name) const
   {
     if (name != schema::DB_NAME)
       throw std::runtime_error("only main supported");
