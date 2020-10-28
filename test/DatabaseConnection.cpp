@@ -30,6 +30,7 @@
 #include <gtest/gtest.h>
 #include <warehouse_ros_sqlite/database_connection.h>
 #include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
 
 class ConnectionTest : public ::testing::Test
@@ -91,6 +92,16 @@ TEST_F(ConnectionTest, InsertQueryAndDeleteMessage)
 
   EXPECT_EQ(coll.removeMessages(query), 1U);
   EXPECT_EQ(coll.count(), 1U);
+}
+
+TEST_F(ConnectionTest, MD5Validation)
+{
+  auto coll1 = conn_->openCollection<geometry_msgs::Vector3>("main", "coll");
+  ASSERT_TRUE(coll1.md5SumMatches());
+  auto coll2 = conn_->openCollection<geometry_msgs::Pose>("main", "coll");
+  ASSERT_FALSE(coll2.md5SumMatches());
+  auto coll3 = conn_->openCollection<geometry_msgs::Vector3>("main", "coll");
+  ASSERT_TRUE(coll3.md5SumMatches());
 }
 
 int main(int argc, char** argv)

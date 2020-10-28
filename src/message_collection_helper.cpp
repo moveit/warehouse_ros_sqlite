@@ -36,6 +36,7 @@
 #include <boost/make_shared.hpp>
 #include <sqlite3.h>
 #include <sstream>
+#include <cstdlib>
 #include <ros/console.h>
 
 namespace
@@ -46,12 +47,12 @@ std::string getMetadataColumn(const std::string& c)
 }
 }  // namespace
 
-std::string warehouse_ros_sqlite::MessageCollectionHelper::findMd5sum()
+std::vector<char> warehouse_ros_sqlite::MessageCollectionHelper::findMd5sum()
 {
   sqlite3_stmt* stmt = nullptr;
   std::ostringstream query_builder;
   query_builder << "SELECT " << schema::M_D5_TABLE_M_D5_COLUMN << " FROM " << schema::M_D5_TABLE_NAME << " WHERE "
-                << schema::M_D5_TABLE_INDEX_COLUMN << " = ?;";
+                << schema::M_D5_TABLE_INDEX_COLUMN << " == ? ;";
   const auto query = query_builder.str();
   if (sqlite3_prepare_v2(db_.get(), query.c_str(), query.size() + 1, &stmt, nullptr) != SQLITE_OK)
   {
@@ -62,11 +63,15 @@ std::string warehouse_ros_sqlite::MessageCollectionHelper::findMd5sum()
   {
     throw std::runtime_error("");
   }
+  std::vector<char> ans;
   if (sqlite3_step(stmt) == SQLITE_ROW)
   {
-    return std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)), sqlite3_column_bytes(stmt, 1));
+    const int count = sqlite3_column_bytes(stmt, 0);
+    const auto col = static_cast<const char*>(sqlite3_column_blob(stmt, 0));
+    ans.reserve(count);
+    std::copy(col, col + count, std::back_inserter(ans));
   }
-  return "";
+  return ans;
 }
 
 bool warehouse_ros_sqlite::MessageCollectionHelper::initialize(const std::string& datatype, const std::string& md5)
@@ -75,7 +80,23 @@ bool warehouse_ros_sqlite::MessageCollectionHelper::initialize(const std::string
   const auto current_md5 = findMd5sum();
   if (!current_md5.empty())
   {
-    return current_md5 == md5;
+    if (md5.size() != 32)
+    {
+      throw std::invalid_argument("md5.size() must equal 32");
+    }
+    std::vector<char> binary_md5(16);
+    std::istringstream s(md5);
+    s >> std::hex;
+    size_t md5_idx = 0;
+    for (auto& c : binary_md5)
+    {
+      const auto t = std::strtoul(md5.substr(md5_idx, 2).c_str(), nullptr, 16);
+      if (t == ULONG_MAX)
+        throw std::invalid_argument("md5 is not hex string");
+      c = static_cast<unsigned char>(t);
+      md5_idx += 2;
+    }
+    return current_md5 == binary_md5;
   }
   std::ostringstream query_builder;
   query_builder << "BEGIN TRANSACTION; CREATE TABLE " << getTableName() << "(" << schema::DATA_COLUMN_NAME

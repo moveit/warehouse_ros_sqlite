@@ -58,7 +58,7 @@ public:
   }
 
 private:
-  std::string findMd5sum();
+  std::vector<char> findMd5sum();
   std::string getTableName() const
   {
     return schema::TABLE_NAME_PREFIX + name_;
