@@ -36,6 +36,7 @@
 #include <boost/make_shared.hpp>
 #include <sqlite3.h>
 #include <sstream>
+#include <ros/console.h>
 
 namespace
 {
@@ -78,12 +79,13 @@ bool warehouse_ros_sqlite::MessageCollectionHelper::initialize(const std::string
   }
   std::ostringstream query_builder;
   query_builder << "BEGIN TRANSACTION; CREATE TABLE " << getTableName() << "(" << schema::DataColumnName
-                << "BLOB NOT NULL, " << schema::MetadataColumnPrefix << "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                << " BLOB NOT NULL, " << schema::MetadataColumnPrefix << "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 << schema::MetadataColumnPrefix << "creation_time INTEGER)"
                 << "; INSERT INTO " << MD5TableName << " ( " << MD5TableIndexColumn << " , " << MD5TableMD5Column
-                << " , " << MD5TableDatatypeColumn << ") VALUES (" << name_ << " , " << md5 << " , " << datatype
-                << "); COMMIT TRANSACTION;";
+                << " , " << MD5TableDatatypeColumn << ") VALUES ('" << name_ << "' , x'" << md5 << "' , '" << datatype
+                << "'); COMMIT TRANSACTION;";
   const auto query = query_builder.str();
+  ROS_DEBUG_NAMED("warehouse_ros_sqlite", "initialize query: %s", query.c_str());
   return sqlite3_exec(db_.get(), query.c_str(), nullptr, nullptr, nullptr) == SQLITE_OK;
 }
 
@@ -109,6 +111,7 @@ void warehouse_ros_sqlite::MessageCollectionHelper::insert(char* msg, size_t msg
 
   sqlite3_stmt* stmt = nullptr;
   const auto query_str = query.str();
+  ROS_DEBUG_NAMED("warehouse_ros_sqlite", "insert query: %s", query_str.c_str());
   if (sqlite3_prepare_v2(db_.get(), query_str.c_str(), query_str.size() + 1, &stmt, nullptr) != SQLITE_OK)
     throw std::runtime_error("");
   const sqlite3_stmt_ptr stmt_guard(stmt);
@@ -222,7 +225,7 @@ unsigned warehouse_ros_sqlite::MessageCollectionHelper::count()
 
   assert(sqlite3_column_count(stmt) == 1);
 
-  return sqlite3_column_int(stmt, 1);
+  return sqlite3_column_int(stmt, 0);
 }
 warehouse_ros::Query::Ptr warehouse_ros_sqlite::MessageCollectionHelper::createQuery() const
 {

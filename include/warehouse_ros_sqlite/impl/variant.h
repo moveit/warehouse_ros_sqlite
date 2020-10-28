@@ -76,8 +76,8 @@ class EnsureColumnVisitor : boost::static_visitor<>
   void add_column(const char* datatype)
   {
     std::ostringstream query_builder;
-    query_builder << "ALTER TABLE " << tablename_ << " ADD " << colname_ << datatype << ";";
-    if (sqlite3_exec(db_, query_builder.str().c_str(), nullptr, nullptr, nullptr) != SQLITE_DONE)
+    query_builder << "ALTER TABLE " << tablename_ << " ADD " << colname_ << " " << datatype << ";";
+    if (sqlite3_exec(db_, query_builder.str().c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
     {
       throw std::runtime_error("could not create column");
     }

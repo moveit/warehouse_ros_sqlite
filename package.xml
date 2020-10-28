@@ -17,7 +17,6 @@
   <depend>warehouse_ros</depend>
   <depend>roscpp</depend>
   <depend>rostime</depend>
-  <depend>std_msgs</depend>
   <depend>class_loader</depend>
 
   <test_depend>rostest</test_depend>

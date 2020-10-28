@@ -76,5 +76,7 @@ protected:
     if (name != schema::DBName)
       throw std::runtime_error("only main supported");
   }
+
+  void init_db();
 };
 }  // namespace warehouse_ros_sqlite

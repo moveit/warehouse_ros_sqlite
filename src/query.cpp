@@ -34,6 +34,7 @@
 #include <warehouse_ros/exceptions.h>
 #include <warehouse_ros_sqlite/impl/variant.h>
 #include <cassert>
+#include <ros/console.h>
 
 warehouse_ros_sqlite::Query::Query()
 {
@@ -45,6 +46,7 @@ warehouse_ros_sqlite::sqlite3_stmt_ptr warehouse_ros_sqlite::Query::prepare(sqli
 {
   sqlite3_stmt* stmt = nullptr;
   const auto query = intro + query_.str() + outro + ";";
+  ROS_DEBUG_NAMED("warehouse_ros_sqlite", "query query: %s", query.c_str());
   if (sqlite3_prepare_v2(db_conn, query.c_str(), query.size() + 1 /* null terminator*/, &stmt, nullptr) != SQLITE_OK)
   {
     throw warehouse_ros::WarehouseRosException("Prepare query failed");

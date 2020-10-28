@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rostest
   rostime
-  std_msgs
   warehouse_ros
   class_loader
 )
@@ -25,7 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS warehouse_ros
+  CATKIN_DEPENDS warehouse_ros roscpp
 )
 
 add_library(${PROJECT_NAME}
@@ -43,3 +42,9 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} 
 
 install(FILES sqlite_database_connection_plugin_description.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(TARGETS ${PACKAGE_NAME}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+
