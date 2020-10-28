@@ -104,6 +104,35 @@ TEST_F(ConnectionTest, MD5Validation)
   ASSERT_TRUE(coll3.md5SumMatches());
 }
 
+TEST_F(ConnectionTest, MetadataNullValue)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll = conn_->openCollection<V>("main", "coll");
+  auto meta1 = coll.createMetadata();
+  meta1->append("x", 3);
+
+  V v1, v2;
+  v1.x = 3.0;
+  v1.y = 1.0;
+  v2.x = 5.0;
+  v2.y = 7.0;
+
+  coll.insert(v1, meta1);
+  meta1->append("y", 8);
+  coll.insert(v2, meta1);
+
+  auto query = coll.createQuery();
+  query->append("x", 3);
+
+  const auto list = coll.queryList(query);
+  ASSERT_EQ(list.size(), size_t(2));
+  EXPECT_EQ(list[0]->lookupInt("x"), 3);
+  EXPECT_EQ(list[1]->lookupInt("x"), 3);
+
+  EXPECT_TRUE(((list[0]->lookupInt("y") == 0 && list[1]->lookupInt("y") == 8) ||
+               (list[1]->lookupInt("y") == 0 && list[0]->lookupInt("y") == 8)));
+}
+
 int main(int argc, char** argv)
 {
   ros::Time::init();

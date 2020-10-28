@@ -31,6 +31,7 @@
 #include <warehouse_ros/metadata.h>
 #include <boost/variant.hpp>
 #include <map>
+#include <warehouse_ros_sqlite/utils.h>
 
 extern "C" {
 struct sqlite3_stmt;
@@ -42,7 +43,7 @@ namespace warehouse_ros_sqlite
 class Metadata : public warehouse_ros::Metadata
 {
 public:
-  using Variant = boost::variant<std::nullptr_t, std::string, double, int>;
+  using Variant = boost::variant<NullValue, std::string, double, int>;
   void append(const std::string& name, const std::string& val) override;
   void append(const std::string& name, const double val) override;
   void append(const std::string& name, const int val) override;

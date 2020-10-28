@@ -92,7 +92,7 @@ void warehouse_ros_sqlite::Metadata::append(const std::string& name, sqlite3_stm
   switch (sqlite3_column_type(stmt, col))
   {
     case SQLITE_NULL:
-      data_[name] = nullptr;
+      data_[name] = NullValue();
       break;
     case SQLITE_BLOB:
       data_[name] =

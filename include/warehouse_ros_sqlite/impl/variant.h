@@ -33,6 +33,7 @@
 #include <string>
 #include <sstream>
 #include <sqlite3.h>
+#include <warehouse_ros_sqlite/utils.h>
 
 namespace warehouse_ros_sqlite
 {
@@ -57,7 +58,7 @@ public:
   {
     return sqlite3_bind_blob64(stmt_, idx_++, s.data(), s.size(), SQLITE_STATIC);
   }
-  int operator()(std::nullptr_t)
+  int operator()(NullValue /* unused */)
   {
     return sqlite3_bind_null(stmt_, idx_++);
   }
@@ -102,7 +103,7 @@ public:
     if (!columnExists())
       addColumn("BLOB");
   }
-  void operator()(std::nullptr_t)
+  void operator()(NullValue /* unused */)
   {
     if (!columnExists())
       throw std::runtime_error("not implemented");
@@ -117,20 +118,32 @@ public:
 namespace detail
 {
 template <typename R, typename T>
-R NullValueGet(T /*unused*/)
+struct NullValueGet
 {
-  throw boost::bad_get();
-}
+  static R get(T /* unused */)
+  {
+    throw boost::bad_get();
+  }
+};
+
 template <typename R>
-typename std::enable_if<!std::is_same<R, std::nullptr_t>::value, R>::type NullValueGet(R r)
+struct NullValueGet<R, typename std::enable_if<!std::is_same<R, NullValue>::value, R>::type>
 {
-  return std::forward<R>(r);
-}
+  static R get(R r)
+  {
+    return std::forward<R>(r);
+  }
+};
+
 template <typename R>
-R NullValueGet(std::nullptr_t)
+struct NullValueGet<R, NullValue>
 {
-  return R();
-}
+  static R get(NullValue /* unused */)
+  {
+    return R();
+  }
+};
+
 }  // namespace detail
 
 template <typename R>
@@ -139,7 +152,7 @@ struct NullValueVisitor : boost::static_visitor<R>
   template <typename T>
   R operator()(T t) const
   {
-    return detail::NullValueGet<R, T>(std::forward<T>(t));
+    return detail::NullValueGet<R, T>::get(std::forward<T>(t));
   }
 };
 }  // namespace warehouse_ros_sqlite

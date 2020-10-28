@@ -59,4 +59,7 @@ constexpr const char* M_D5_TABLE_DATATYPE_COLUMN = "MessageDataType";
 const int DATA_COLUMN_INDEX = 0;
 }  // namespace schema
 
+struct NullValue
+{
+};
 }  // namespace warehouse_ros_sqlite
