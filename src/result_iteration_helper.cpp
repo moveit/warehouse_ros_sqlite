@@ -38,6 +38,8 @@
 
 bool warehouse_ros_sqlite::ResultIteratorHelper::next()
 {
+  if (!stmt_)
+    return false;
   switch (sqlite3_step(stmt_.get()))
   {
     case SQLITE_ROW:
@@ -94,6 +96,8 @@ int constexpr strlength(const char* str)
 
 void warehouse_ros_sqlite::ResultIteratorHelper::initMetadataCols()
 {
+  if (!stmt_)
+    return;
   constexpr int max_length = strlength(schema::METADATA_COLUMN_PREFIX);
   for (int i = 0; i < sqlite3_column_count(stmt_.get()); ++i)
   {

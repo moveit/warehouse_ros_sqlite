@@ -217,6 +217,82 @@ TEST_F(ConnectionTest, ModifyMetadata)
   EXPECT_EQ(list[0]->x, 3.0);
 }
 
+TEST_F(ConnectionTest, Metadata)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll = conn_->openCollection<V>("main", "coll");
+  auto meta1 = coll.createMetadata();
+
+  auto keys = meta1->lookupFieldNames();
+  EXPECT_TRUE(keys.empty());
+  meta1->append("x", false);
+
+  keys = meta1->lookupFieldNames();
+  EXPECT_NE(keys.find("x"), keys.end());
+  EXPECT_EQ(keys.size(), 1U);
+  EXPECT_TRUE(meta1->lookupField("x"));
+  EXPECT_FALSE(meta1->lookupField("z"));
+}
+
+TEST_F(ConnectionTest, ComplexQuery)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll = conn_->openCollection<V>("main", "coll");
+  auto meta1 = coll.createMetadata();
+  meta1->append("x", 3);
+
+  const int y1 = 8;
+  meta1->append("y", y1);
+
+  V v1, v2;
+  v1.x = 3.0;
+  v1.y = 9.0;
+  v2.x = 5.0;
+  v2.y = 7.0;
+
+  coll.insert(v1, meta1);
+  meta1->append("y", 6);
+  coll.insert(v2, meta1);
+
+  auto query = coll.createQuery();
+  query->append("x", 3);
+  query->append("y", y1);
+
+  const auto list = coll.queryList(query);
+  ASSERT_EQ(list.size(), size_t(1));
+  EXPECT_EQ(list[0]->lookupInt("x"), 3);
+  EXPECT_EQ(list[0]->lookupInt("y"), y1);
+  EXPECT_EQ(list[0]->y, 9.0);
+}
+
+TEST_F(ConnectionTest, EmptyQuery)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll = conn_->openCollection<V>("main", "coll");
+  auto meta1 = coll.createMetadata();
+  meta1->append("x", 7);
+  coll.insert(V(), meta1);
+
+  // known column, but wrong value
+  auto query = coll.createQuery();
+  query->append("x", 3);
+
+  auto it_pair = coll.query(query);
+  EXPECT_EQ(std::get<0>(it_pair), std::get<1>(it_pair));
+
+  auto list = coll.queryList(query);
+  EXPECT_EQ(list.size(), size_t(0));
+
+  // unknown column
+  query->append("y", 3);
+
+  it_pair = coll.query(query);
+  EXPECT_EQ(std::get<0>(it_pair), std::get<1>(it_pair));
+
+  list = coll.queryList(query);
+  EXPECT_EQ(list.size(), size_t(0));
+}
+
 int main(int argc, char** argv)
 {
   ros::Time::init();

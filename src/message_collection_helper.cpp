@@ -169,13 +169,16 @@ warehouse_ros_sqlite::MessageCollectionHelper::query(warehouse_ros::Query::Const
     intro << " WHERE ";
   }
   auto stmt = query_ptr->prepare(db_.get(), intro.str(), outro);
-  switch (sqlite3_step(stmt.get()))
+  if (stmt)
   {
-    case SQLITE_DONE:
-    case SQLITE_ROW:
-      break;
-    default:
-      throw std::runtime_error("");
+    switch (sqlite3_step(stmt.get()))
+    {
+      case SQLITE_DONE:
+      case SQLITE_ROW:
+        break;
+      default:
+        throw std::runtime_error("");
+    }
   }
   return boost::make_shared<warehouse_ros_sqlite::ResultIteratorHelper>(std::move(stmt));
 }

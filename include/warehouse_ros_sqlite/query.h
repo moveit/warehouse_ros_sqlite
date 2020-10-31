@@ -40,7 +40,6 @@ namespace warehouse_ros_sqlite
 class Query : public warehouse_ros::Query
 {
 public:
-  Query();
   using Variant = boost::variant<std::string, double, int>;
   void append(const std::string& name, const std::string& val) override;
   void append(const std::string& name, const double val) override;

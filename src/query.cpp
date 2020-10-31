@@ -36,23 +36,20 @@
 #include <cassert>
 #include <ros/console.h>
 
-warehouse_ros_sqlite::Query::Query()
-{
-}
-
 warehouse_ros_sqlite::sqlite3_stmt_ptr warehouse_ros_sqlite::Query::prepare(sqlite3* db_conn, const std::string& intro,
                                                                             const std::string& outro,
                                                                             int bind_start_col) const
 {
   sqlite3_stmt* stmt = nullptr;
   const auto query = intro + query_.str() + outro + ";";
+  warehouse_ros_sqlite::sqlite3_stmt_ptr ans;
   ROS_DEBUG_NAMED("warehouse_ros_sqlite", "query query: %s", query.c_str());
   if (sqlite3_prepare_v2(db_conn, query.c_str(), query.size() + 1 /* null terminator*/, &stmt, nullptr) != SQLITE_OK)
   {
-    throw warehouse_ros::WarehouseRosException("Prepare query failed");
+    ROS_ERROR_NAMED("warehouse_ros_sqlite", "Preparing Query failed: %s", sqlite3_errmsg(db_conn));
+    return ans;
   }
-  warehouse_ros_sqlite::sqlite3_stmt_ptr ans(stmt);
-
+  ans.reset(stmt);
   assert(static_cast<size_t>(sqlite3_bind_parameter_count(stmt)) == (values_.size() + bind_start_col - 1));
 
   warehouse_ros_sqlite::BindVisitor visitor(stmt, bind_start_col);
