@@ -96,7 +96,11 @@ bool warehouse_ros_sqlite::MessageCollectionHelper::initialize(const std::string
                 << "' , x'" << md5 << "' , '" << esc(datatype) << "'); COMMIT TRANSACTION;";
   const auto query = query_builder.str();
   ROS_DEBUG_NAMED("warehouse_ros_sqlite", "initialize query: %s", query.c_str());
-  return sqlite3_exec(db_.get(), query.c_str(), nullptr, nullptr, nullptr) == SQLITE_OK;
+  if (sqlite3_exec(db_.get(), query.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK) {
+    sqlite3_exec(db_.get(), "ROLLBACK;", nullptr, nullptr, nullptr);
+    return false;
+  }
+  return true;
 }
 
 void warehouse_ros_sqlite::MessageCollectionHelper::insert(char* msg, size_t msg_size,
