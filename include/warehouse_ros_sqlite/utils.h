@@ -29,6 +29,9 @@
 #pragma once
 
 #include <memory>
+#include <array>
+#include <climits>
+#include <cstdlib>
 
 extern "C" {
 struct sqlite3_stmt;
@@ -51,7 +54,7 @@ namespace schema
 namespace detail
 {
 template <typename = void>
-void check_do_escape(std::string&, char)
+void check_do_escape(std::string& /*unused*/, char /*unused*/)
 {
 }
 template <char escaped_char, char... other_chars>
@@ -106,4 +109,25 @@ inline std::string escape_string_literal_without_quotes(const std::string& c)
 struct NullValue
 {
 };
+
+inline std::array<unsigned char, 16> parse_md5_hexstring(const std::string& md5)
+{
+  if (md5.size() != 32)
+  {
+    throw std::invalid_argument("md5.size() must equal 32");
+  }
+  std::array<unsigned char, 16> binary_md5;
+  size_t md5_idx = 0;
+  for (auto& c : binary_md5)
+  {
+    char* end;
+    const auto substr = md5.substr(md5_idx, 2);
+    const auto t = std::strtoul(substr.c_str(), &end, 16);
+    if (substr.c_str() + 2 != end)
+      throw std::invalid_argument("md5 is not hex string");
+    c = static_cast<unsigned char>(t);
+    md5_idx += 2;
+  }
+  return binary_md5;
+}
 }  // namespace warehouse_ros_sqlite

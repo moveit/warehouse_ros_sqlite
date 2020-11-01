@@ -58,7 +58,13 @@ public:
   }
 
 private:
-  std::vector<char> findMd5sum();
+  enum class Md5CompareResult
+  {
+    EMPTY,
+    MATCH,
+    MISMATCH
+  };
+  Md5CompareResult findAndMatchMd5Sum(const std::array<unsigned char, 16>& md5_bytes);
   schema::escaped_tablename getEscapedTableName() const
   {
     return schema::escape_tablename_with_prefix(name_);

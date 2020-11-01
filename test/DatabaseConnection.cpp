@@ -29,6 +29,7 @@
 
 #include <gtest/gtest.h>
 #include <warehouse_ros_sqlite/database_connection.h>
+#include <warehouse_ros_sqlite/utils.h>
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
@@ -291,6 +292,22 @@ TEST_F(ConnectionTest, EmptyQuery)
 
   list = coll.queryList(query);
   EXPECT_EQ(list.size(), size_t(0));
+}
+
+TEST(Utils, Md5Validation)
+{
+  const char* a = "4a842b65f413084dc2b10fb484ea7f17";
+  const std::array<unsigned char, 16> b{
+    0x4a, 0x84, 0x2b, 0x65, 0xf4, 0x13, 0x08, 0x4d, 0xc2, 0xb1, 0x0f, 0xb4, 0x84, 0xea, 0x7f, 0x17,
+  };
+
+  EXPECT_EQ(warehouse_ros_sqlite::parse_md5_hexstring(a), b);
+
+  EXPECT_THROW(warehouse_ros_sqlite::parse_md5_hexstring("123abc"), std::invalid_argument);
+  const char* c = "Za842b65f413084dc2b10fb484ea7f17";
+  const char* d = "aZ842b65f413084dc2b10fb484ea7f17";
+  EXPECT_THROW(warehouse_ros_sqlite::parse_md5_hexstring(c), std::invalid_argument);
+  EXPECT_THROW(warehouse_ros_sqlite::parse_md5_hexstring(d), std::invalid_argument);
 }
 
 int main(int argc, char** argv)

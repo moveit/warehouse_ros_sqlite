@@ -36,10 +36,11 @@
 #include <boost/make_shared.hpp>
 #include <sqlite3.h>
 #include <sstream>
-#include <cstdlib>
+#include <cstring>
 #include <ros/console.h>
 
-std::vector<char> warehouse_ros_sqlite::MessageCollectionHelper::findMd5sum()
+warehouse_ros_sqlite::MessageCollectionHelper::Md5CompareResult
+warehouse_ros_sqlite::MessageCollectionHelper::findAndMatchMd5Sum(const std::array<unsigned char, 16>& md5_bytes)
 {
   sqlite3_stmt* stmt = nullptr;
   std::ostringstream query_builder;
@@ -55,41 +56,36 @@ std::vector<char> warehouse_ros_sqlite::MessageCollectionHelper::findMd5sum()
   {
     throw std::runtime_error("");
   }
-  std::vector<char> ans;
-  if (sqlite3_step(stmt) == SQLITE_ROW)
+  switch (sqlite3_step(stmt))
   {
-    const int count = sqlite3_column_bytes(stmt, 0);
-    const auto col = static_cast<const char*>(sqlite3_column_blob(stmt, 0));
-    ans.reserve(count);
-    std::copy(col, col + count, std::back_inserter(ans));
+    case SQLITE_DONE:
+      return Md5CompareResult::EMPTY;
+    case SQLITE_ROW:
+      break;
+    default:
+      throw std::runtime_error("");
   }
-  return ans;
+
+  if (std::size_t(sqlite3_column_bytes(stmt, 0)) != md5_bytes.size())
+  {
+    throw std::runtime_error("invalid md5 value");
+  }
+  if (std::memcmp(&md5_bytes[0], sqlite3_column_blob(stmt, 0), md5_bytes.size()) == 0)
+    return Md5CompareResult::MATCH;
+  else
+    return Md5CompareResult::MISMATCH;
 }
 
 bool warehouse_ros_sqlite::MessageCollectionHelper::initialize(const std::string& datatype, const std::string& md5)
 {
   using namespace warehouse_ros_sqlite::schema;
-  const auto current_md5 = findMd5sum();
-  if (!current_md5.empty())
+  const auto md5_bytes = warehouse_ros_sqlite::parse_md5_hexstring(md5);
+  const auto current_md5_state = findAndMatchMd5Sum(md5_bytes);
+  if (current_md5_state != Md5CompareResult::EMPTY)
   {
-    if (md5.size() != 32)
-    {
-      throw std::invalid_argument("md5.size() must equal 32");
-    }
-    std::vector<char> binary_md5(16);
-    std::istringstream s(md5);
-    s >> std::hex;
-    size_t md5_idx = 0;
-    for (auto& c : binary_md5)
-    {
-      const auto t = std::strtoul(md5.substr(md5_idx, 2).c_str(), nullptr, 16);
-      if (t == ULONG_MAX)
-        throw std::invalid_argument("md5 is not hex string");
-      c = static_cast<unsigned char>(t);
-      md5_idx += 2;
-    }
-    return current_md5 == binary_md5;
+    return current_md5_state == Md5CompareResult::MATCH;
   }
+
   std::ostringstream query_builder;
   const auto& esc = schema::escape_string_literal_without_quotes;
   query_builder << "BEGIN TRANSACTION; CREATE TABLE " << getEscapedTableName() << "(" << schema::DATA_COLUMN_NAME
