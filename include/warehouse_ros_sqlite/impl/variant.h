@@ -71,13 +71,20 @@ public:
 class EnsureColumnVisitor : boost::static_visitor<>
 {
   sqlite3* db_;
-  const char* tablename_;
-  std::string colname_;
-  bool columnExists();
+  std::string unescaped_tablename_;
+  schema::escaped_tablename escaped_tablename_;
+  std::string unescaped_colname_;
+  bool columnExists()
+  {
+    const std::string colname(schema::METADATA_COLUMN_PREFIX + unescaped_colname_);
+    return sqlite3_table_column_metadata(db_, schema::DB_NAME, unescaped_tablename_.c_str(), colname.c_str(), nullptr,
+                                         nullptr, nullptr, nullptr, nullptr) == SQLITE_OK;
+  }
   void addColumn(const char* datatype)
   {
     std::ostringstream query_builder;
-    query_builder << "ALTER TABLE " << tablename_ << " ADD " << colname_ << " " << datatype << ";";
+    query_builder << "ALTER TABLE " << escaped_tablename_ << " ADD "
+                  << schema::escape_columnname_with_prefix(unescaped_colname_) << " " << datatype << ";";
     if (sqlite3_exec(db_, query_builder.str().c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
     {
       throw std::runtime_error("could not create column");
@@ -85,7 +92,10 @@ class EnsureColumnVisitor : boost::static_visitor<>
   }
 
 public:
-  EnsureColumnVisitor(sqlite3* db, const char* tablename) : db_(db), tablename_(tablename)
+  EnsureColumnVisitor(sqlite3* db, const std::string& unescaped_tablename)
+    : db_(db)
+    , unescaped_tablename_(schema::TABLE_NAME_PREFIX + unescaped_tablename)
+    , escaped_tablename_(schema::escape_tablename_with_prefix(unescaped_tablename))
   {
   }
   void operator()(int /*unused*/)
@@ -108,9 +118,9 @@ public:
     if (!columnExists())
       throw std::runtime_error("not implemented");
   }
-  EnsureColumnVisitor& setColumnName(std::string&& c)
+  EnsureColumnVisitor& setColumnName(const std::string& unescaped_column)
   {
-    colname_ = std::move(c);
+    unescaped_colname_ = unescaped_column;
     return *this;
   }
 };

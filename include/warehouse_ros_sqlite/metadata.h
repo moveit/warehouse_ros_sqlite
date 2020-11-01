@@ -59,7 +59,7 @@ public:
   {
     return data_;
   }
-  void ensureColumns(sqlite3* db, const std::string& table_name) const;
+  void ensureColumns(sqlite3* db, const std::string& unescaped_table_name) const;
 
 private:
   // ordered map for reproducible iterating

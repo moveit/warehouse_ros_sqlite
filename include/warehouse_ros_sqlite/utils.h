@@ -48,6 +48,34 @@ using sqlite3_ptr = std::shared_ptr<sqlite3>;
 
 namespace schema
 {
+namespace detail
+{
+template <typename = void>
+void check_do_escape(std::string&, char)
+{
+}
+template <char escaped_char, char... other_chars>
+void check_do_escape(std::string& s, char c)
+{
+  if (c == escaped_char)
+    s.push_back(escaped_char);
+  check_do_escape<other_chars...>(s, c);
+}
+
+template <char... escaped_chars>
+std::string escape(const std::string& s)
+{
+  std::string ans;
+  ans.reserve(4 * sizeof...(escaped_chars) + s.size());
+  for (const auto c : s)
+  {
+    ans.push_back(c);
+    check_do_escape<escaped_chars...>(ans, c);
+  }
+  return ans;
+}
+}  // namespace detail
+
 constexpr const char* DB_NAME = "main";
 constexpr const char* METADATA_COLUMN_PREFIX = "M_";
 constexpr const char* DATA_COLUMN_NAME = "Data";
@@ -57,6 +85,22 @@ constexpr const char* M_D5_TABLE_INDEX_COLUMN = "TableName";
 constexpr const char* M_D5_TABLE_M_D5_COLUMN = "MessageMD5";
 constexpr const char* M_D5_TABLE_DATATYPE_COLUMN = "MessageDataType";
 const int DATA_COLUMN_INDEX = 0;
+
+using escaped_columnname = std::string;
+using escaped_tablename = std::string;
+inline escaped_columnname escape_columnname_with_prefix(const std::string& c)
+{
+  return "\"" + std::string(METADATA_COLUMN_PREFIX) + detail::escape<'"'>(c) + "\"";
+}
+inline escaped_tablename escape_tablename_with_prefix(const std::string& c)
+{
+  return "\"" + std::string(TABLE_NAME_PREFIX) + detail::escape<'"'>(c) + "\"";
+}
+inline std::string escape_string_literal_without_quotes(const std::string& c)
+{
+  return schema::detail::escape<'\''>(c);
+}
+
 }  // namespace schema
 
 struct NullValue

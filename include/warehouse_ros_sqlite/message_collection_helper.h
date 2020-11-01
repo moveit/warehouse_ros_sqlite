@@ -59,12 +59,10 @@ public:
 
 private:
   std::vector<char> findMd5sum();
-  std::string getTableName() const
+  schema::escaped_tablename getEscapedTableName() const
   {
-    return schema::TABLE_NAME_PREFIX + name_;
+    return schema::escape_tablename_with_prefix(name_);
   }
-
-  bool columnExists(const char* colname);
 };
 
 }  // namespace warehouse_ros_sqlite

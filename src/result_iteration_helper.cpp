@@ -104,6 +104,7 @@ void warehouse_ros_sqlite::ResultIteratorHelper::initMetadataCols()
     const char* col_name = sqlite3_column_name(stmt_.get(), i);
     if (std::strncmp(schema::METADATA_COLUMN_PREFIX, col_name, max_length) == 0)
     {
+      // strip off prefix
       metadata_cols_.emplace_back(col_name + max_length, i);
     }
   }
