@@ -57,11 +57,63 @@ bool warehouse_ros_sqlite::DatabaseConnection::isConnected()
   return static_cast<bool>(db_);
 }
 
+std::vector<std::string> warehouse_ros_sqlite::DatabaseConnection::getTablesOfDatabase(const std::string& db_name)
+{
+  std::ostringstream query_builder;
+  query_builder << "SELECT " << schema::M_D5_TABLE_INDEX_COLUMN << " FROM " << schema::M_D5_TABLE_NAME << " WHERE "
+                << schema::M_D5_TABLE_DATABASE_COLUMN << " == ?;";
+  const auto select_query = query_builder.str();
+  sqlite3_stmt* raw_stmt = nullptr;
+  if (sqlite3_prepare_v2(db_.get(), select_query.c_str(), select_query.size() + 1, &raw_stmt, nullptr) != SQLITE_OK)
+  {
+    throw std::runtime_error("");
+  }
+  sqlite3_stmt_ptr stmt(std::exchange(raw_stmt, nullptr));
+  if (sqlite3_bind_text(stmt.get(), 1, db_name.c_str(), db_name.size(), SQLITE_STATIC) != SQLITE_OK)
+  {
+    throw std::runtime_error("");
+  }
+  std::vector<std::string> tables;
+  for (int res = sqlite3_step(stmt.get()); res != SQLITE_DONE; res = sqlite3_step(stmt.get()))
+  {
+    if (res == SQLITE_ROW)
+    {
+      tables.emplace_back(reinterpret_cast<const char*>(sqlite3_column_text(stmt.get(), 0)),
+                          sqlite3_column_bytes(stmt.get(), 0));
+    }
+    else
+    {
+      throw std::runtime_error("");
+    }
+  }
+  return tables;
+}
+
 /// \brief Drop a db and all its collections.
 /// A DbClientConnection exception will be thrown if the database is not connected.
-void warehouse_ros_sqlite::DatabaseConnection::dropDatabase(const std::string& /* db_name */)
+void warehouse_ros_sqlite::DatabaseConnection::dropDatabase(const std::string& db_name)
 {
-  // TODO
+  const auto tables_to_be_dropped = getTablesOfDatabase(db_name);
+  std::ostringstream query_builder;
+  for (const auto& table : tables_to_be_dropped)
+  {
+    const auto escaped_table_string = schema::escape_string_literal_without_quotes(table);
+    const auto escaped_table_identifier = schema::escape_identifier(table);
+    query_builder << "DELETE FROM " << schema::M_D5_TABLE_NAME << " WHERE " << schema::M_D5_TABLE_INDEX_COLUMN
+                  << " == '" << escaped_table_string << "'; ";
+    query_builder << "DROP TABLE " << escaped_table_identifier << ";";
+  }
+  query_builder << "COMMIT;";
+  const auto query = query_builder.str();
+  if (sqlite3_exec(db_.get(), "BEGIN TRANSACTION;", nullptr, nullptr, nullptr) == SQLITE_OK)
+  {
+    if (sqlite3_exec(db_.get(), query.c_str(), nullptr, nullptr, nullptr) == SQLITE_OK)
+    {
+      return;
+    }
+    sqlite3_exec(db_.get(), "ROLLBACK;", nullptr, nullptr, nullptr);
+  }
+  throw std::runtime_error("");
 }
 
 /// \brief Return the ROS Message type of a given collection

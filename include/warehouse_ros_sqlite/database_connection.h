@@ -71,5 +71,6 @@ protected:
   warehouse_ros::MessageCollectionHelper::Ptr openCollectionHelper(const std::string& db_name,
                                                                    const std::string& collection_name) override;
   void initDb();
+  std::vector<std::string> getTablesOfDatabase(const std::string& db_name);
 };
 }  // namespace warehouse_ros_sqlite

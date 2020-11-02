@@ -322,6 +322,42 @@ TEST_F(ConnectionTest, DifferentDatabases)
   }
 }
 
+TEST_F(ConnectionTest, DropDatabase)
+{
+  using V = geometry_msgs::Vector3;
+  // create two independent databases
+  {
+    auto coll = conn_->openCollection<V>("main", "coll");
+    auto meta1 = coll.createMetadata();
+    meta1->append("x", 7);
+    coll.insert(V(), meta1);
+  }
+  {
+    auto coll = conn_->openCollection<V>("main2", "coll");
+    auto meta1 = coll.createMetadata();
+    meta1->append("x", 7);
+    coll.insert(V(), meta1);
+  }
+  // delete first one
+  conn_->dropDatabase("main");
+  // second one still there?
+  {
+    auto coll1 = conn_->openCollection<V>("main2", "coll");
+    auto query1 = coll1.createQuery();
+    query1->append("x", 7);
+    const auto list1 = coll1.queryList(query1);
+    EXPECT_EQ(list1.size(), size_t(1));
+  }
+  // first one gone?
+  {
+    auto coll1 = conn_->openCollection<V>("main", "coll");
+    auto query1 = coll1.createQuery();
+    query1->append("x", 7);
+    const auto list1 = coll1.queryList(query1);
+    EXPECT_EQ(list1.size(), size_t(0));
+  }
+}
+
 TEST(Utils, Md5Validation)
 {
   const char* a = "4a842b65f413084dc2b10fb484ea7f17";
