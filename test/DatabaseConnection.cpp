@@ -294,6 +294,34 @@ TEST_F(ConnectionTest, EmptyQuery)
   EXPECT_EQ(list.size(), size_t(0));
 }
 
+TEST_F(ConnectionTest, DifferentDatabases)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll1 = conn_->openCollection<V>("main1", "coll");
+  auto meta1 = coll1.createMetadata();
+  meta1->append("x", 7);
+  coll1.insert(V(), meta1);
+
+  auto coll2 = conn_->openCollection<V>("main2", "coll");
+  {
+    auto query2 = coll2.createQuery();
+    query2->append("x", 7);
+    const auto list2 = coll2.queryList(query2);
+    EXPECT_EQ(list2.size(), size_t(0));
+  }
+  {
+    auto meta2 = coll2.createMetadata();
+    meta2->append("x", 7);
+    coll2.insert(V(), meta2);
+  }
+  {
+    auto query1 = coll1.createQuery();
+    query1->append("x", 7);
+    const auto list1 = coll1.queryList(query1);
+    EXPECT_EQ(list1.size(), size_t(1));
+  }
+}
+
 TEST(Utils, Md5Validation)
 {
   const char* a = "4a842b65f413084dc2b10fb484ea7f17";

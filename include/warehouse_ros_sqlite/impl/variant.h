@@ -94,8 +94,8 @@ class EnsureColumnVisitor : boost::static_visitor<>
 public:
   EnsureColumnVisitor(sqlite3* db, const std::string& unescaped_tablename)
     : db_(db)
-    , unescaped_tablename_(schema::TABLE_NAME_PREFIX + unescaped_tablename)
-    , escaped_tablename_(schema::escape_tablename_with_prefix(unescaped_tablename))
+    , unescaped_tablename_(unescaped_tablename)
+    , escaped_tablename_(schema::escape_identifier(unescaped_tablename))
   {
   }
   void operator()(int /*unused*/)

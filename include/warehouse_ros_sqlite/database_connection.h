@@ -70,12 +70,6 @@ public:
 protected:
   warehouse_ros::MessageCollectionHelper::Ptr openCollectionHelper(const std::string& db_name,
                                                                    const std::string& collection_name) override;
-  void checkDbname(const std::string& name) const
-  {
-    if (name != schema::DB_NAME)
-      throw std::runtime_error("only main supported");
-  }
-
   void initDb();
 };
 }  // namespace warehouse_ros_sqlite

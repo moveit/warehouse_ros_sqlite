@@ -84,24 +84,36 @@ constexpr const char* METADATA_COLUMN_PREFIX = "M_";
 constexpr const char* DATA_COLUMN_NAME = "Data";
 constexpr const char* TABLE_NAME_PREFIX = "T_";
 constexpr const char* M_D5_TABLE_NAME = "MessageMD5s";
-constexpr const char* M_D5_TABLE_INDEX_COLUMN = "TableName";
+constexpr const char* M_D5_TABLE_INDEX_COLUMN = "MangledTableName";
 constexpr const char* M_D5_TABLE_M_D5_COLUMN = "MessageMD5";
 constexpr const char* M_D5_TABLE_DATATYPE_COLUMN = "MessageDataType";
+constexpr const char* M_D5_TABLE_TABLE_COLUMN = "VirtualTableName";
+constexpr const char* M_D5_TABLE_DATABASE_COLUMN = "VirtualDatabaseName";
 const int DATA_COLUMN_INDEX = 0;
 
 using escaped_columnname = std::string;
 using escaped_tablename = std::string;
+inline std::string escape_identifier(const std::string& s)
+{
+  return "\"" + detail::escape<'"'>(s) + "\"";
+}
 inline escaped_columnname escape_columnname_with_prefix(const std::string& c)
 {
-  return "\"" + std::string(METADATA_COLUMN_PREFIX) + detail::escape<'"'>(c) + "\"";
-}
-inline escaped_tablename escape_tablename_with_prefix(const std::string& c)
-{
-  return "\"" + std::string(TABLE_NAME_PREFIX) + detail::escape<'"'>(c) + "\"";
+  return escape_identifier(METADATA_COLUMN_PREFIX + c);
 }
 inline std::string escape_string_literal_without_quotes(const std::string& c)
 {
   return schema::detail::escape<'\''>(c);
+}
+inline std::string mangle_database_and_collection_name(const std::string& db_name, const std::string& collection_name)
+{
+  return TABLE_NAME_PREFIX + detail::escape<'@'>(db_name) + "@" + detail::escape<'@'>(collection_name);
+}
+inline escaped_tablename escape_and_mangle_database_and_collection_name(const std::string& db_name,
+                                                                        const std::string& collection_name)
+{
+  return "\"" + detail::escape<'@', '"'>(TABLE_NAME_PREFIX + db_name) + "@" +
+         detail::escape<'@', '"'>(collection_name) + "\"";
 }
 
 }  // namespace schema

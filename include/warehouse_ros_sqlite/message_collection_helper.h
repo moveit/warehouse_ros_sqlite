@@ -36,11 +36,19 @@ namespace warehouse_ros_sqlite
 class MessageCollectionHelper : public warehouse_ros::MessageCollectionHelper
 {
   sqlite3_ptr db_;
-  std::string name_;
+  std::string collection_name_;
+  std::string db_name_;
+  std::string mangled_tablename_;
+  schema::escaped_tablename escaped_mangled_name_;
 
 public:
   MessageCollectionHelper() = default;
-  MessageCollectionHelper(sqlite3_ptr db, const std::string& name) : db_(std::move(db)), name_(name)
+  MessageCollectionHelper(sqlite3_ptr db, const std::string& db_name, const std::string& name)
+    : db_(std::move(db))
+    , collection_name_(name)
+    , db_name_(db_name)
+    , mangled_tablename_(schema::mangle_database_and_collection_name(db_name, name))
+    , escaped_mangled_name_(schema::escape_and_mangle_database_and_collection_name(db_name, name))
   {
   }
   bool initialize(const std::string& datatype, const std::string& md5) override;
@@ -54,7 +62,7 @@ public:
   warehouse_ros::Metadata::Ptr createMetadata() const override;
   std::string collectionName() const override
   {
-    return name_;
+    return collection_name_;
   }
 
 private:
@@ -65,10 +73,6 @@ private:
     MISMATCH
   };
   Md5CompareResult findAndMatchMd5Sum(const std::array<unsigned char, 16>& md5_bytes);
-  schema::escaped_tablename getEscapedTableName() const
-  {
-    return schema::escape_tablename_with_prefix(name_);
-  }
 };
 
 }  // namespace warehouse_ros_sqlite
