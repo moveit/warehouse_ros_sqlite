@@ -34,6 +34,7 @@
 #include <sstream>
 #include <sqlite3.h>
 #include <warehouse_ros_sqlite/utils.h>
+#include <warehouse_ros_sqlite/exceptions.h>
 
 namespace warehouse_ros_sqlite
 {
@@ -87,7 +88,7 @@ class EnsureColumnVisitor : boost::static_visitor<>
                   << schema::escape_columnname_with_prefix(unescaped_colname_) << " " << datatype << ";";
     if (sqlite3_exec(db_, query_builder.str().c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
     {
-      throw std::runtime_error("could not create column");
+      throw InternalError("could not create column", db_);
     }
   }
 

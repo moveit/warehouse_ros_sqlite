@@ -30,8 +30,10 @@
 
 #include <warehouse_ros_sqlite/message_collection_helper.h>
 #include <warehouse_ros_sqlite/utils.h>
+#include <warehouse_ros_sqlite/exceptions.h>
 
 #include <boost/make_shared.hpp>
+#include <boost/format.hpp>
 #include <pluginlib/class_list_macros.h>
 #include <sqlite3.h>
 #include <ros/console.h>
@@ -66,12 +68,12 @@ std::vector<std::string> warehouse_ros_sqlite::DatabaseConnection::getTablesOfDa
   sqlite3_stmt* raw_stmt = nullptr;
   if (sqlite3_prepare_v2(db_.get(), select_query.c_str(), select_query.size() + 1, &raw_stmt, nullptr) != SQLITE_OK)
   {
-    throw std::runtime_error("");
+    throw InternalError("Prepare statement for getTablesOfDatabase() failed", db_.get());
   }
   sqlite3_stmt_ptr stmt(std::exchange(raw_stmt, nullptr));
   if (sqlite3_bind_text(stmt.get(), 1, db_name.c_str(), db_name.size(), SQLITE_STATIC) != SQLITE_OK)
   {
-    throw std::runtime_error("");
+    throw InternalError("Bind parameter for getTablesOfDatabase() failed", db_.get());
   }
   std::vector<std::string> tables;
   for (int res = sqlite3_step(stmt.get()); res != SQLITE_DONE; res = sqlite3_step(stmt.get()))
@@ -83,7 +85,7 @@ std::vector<std::string> warehouse_ros_sqlite::DatabaseConnection::getTablesOfDa
     }
     else
     {
-      throw std::runtime_error("");
+      throw InternalError("Get results for getTablesOfDatabase() failed", db_.get());
     }
   }
   return tables;
@@ -113,7 +115,7 @@ void warehouse_ros_sqlite::DatabaseConnection::dropDatabase(const std::string& d
     }
     sqlite3_exec(db_.get(), "ROLLBACK;", nullptr, nullptr, nullptr);
   }
-  throw std::runtime_error("");
+  throw InternalError("Drop tables failed", db_.get());
 }
 
 /// \brief Return the ROS Message type of a given collection
@@ -129,19 +131,19 @@ std::string warehouse_ros_sqlite::DatabaseConnection::messageType(const std::str
   sqlite3_stmt* stmt = nullptr;
   if (sqlite3_prepare_v2(db_.get(), query.c_str(), query.size() + 1, &stmt, nullptr) != SQLITE_OK)
   {
-    throw std::runtime_error("");
+    throw InternalError("Prepare statement for messageType() failed", db_.get());
   }
   const sqlite3_stmt_ptr guard(stmt);
   const auto mangled_name = schema::mangle_database_and_collection_name(db_name, collection_name);
   if (sqlite3_bind_text(stmt, 1, mangled_name.c_str(), mangled_name.size(), SQLITE_STATIC) != SQLITE_OK)
-    throw std::runtime_error("");
+    throw InternalError("Bind parameter for getTablesOfDatabase() failed", db_.get());
   switch (sqlite3_step(stmt))
   {
     case SQLITE_ROW:
       break;
     case SQLITE_DONE:
     default:
-      throw std::runtime_error("");
+      throw InternalError("Get result for getTablesOfDatabase() failed", db_.get());
   }
   return std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)), sqlite3_column_bytes(stmt, 0));
 }
@@ -156,7 +158,7 @@ void warehouse_ros_sqlite::DatabaseConnection::initDb()
   const auto query = query_builder.str();
   ROS_DEBUG_NAMED("warehouse_ros_sqlite", "MD5 table init: %s", query.c_str());
   if (sqlite3_exec(db_.get(), query.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
-    throw std::runtime_error("could not init md5 table");
+    throw InternalError("Could not initialize Database", db_.get());
 }
 
 warehouse_ros::MessageCollectionHelper::Ptr
@@ -176,6 +178,15 @@ void warehouse_ros_sqlite::sqlite3_delete(sqlite3* db)
   {
     ROS_ERROR("sqlite connection closed when still in use");
   }
+}
+
+warehouse_ros_sqlite::InternalError::InternalError(const char* msg, sqlite3* db)
+  : warehouse_ros::WarehouseRosException(boost::format("%s %s") % msg % sqlite3_errmsg(db))
+{
+}
+warehouse_ros_sqlite::InternalError::InternalError(const char* msg, sqlite3_stmt* stmt)
+  : InternalError(msg, sqlite3_db_handle(stmt))
+{
 }
 
 PLUGINLIB_EXPORT_CLASS(warehouse_ros_sqlite::DatabaseConnection, warehouse_ros::DatabaseConnection)

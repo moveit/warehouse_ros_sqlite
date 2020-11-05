@@ -46,6 +46,8 @@ warehouse_ros_sqlite::sqlite3_stmt_ptr warehouse_ros_sqlite::Query::prepare(sqli
   ROS_DEBUG_NAMED("warehouse_ros_sqlite", "query query: %s", query.c_str());
   if (sqlite3_prepare_v2(db_conn, query.c_str(), query.size() + 1 /* null terminator*/, &stmt, nullptr) != SQLITE_OK)
   {
+    // TODO: check if all column exists and return nullptr if not
+    // not throwing an exception, missing column means empty result
     ROS_ERROR_NAMED("warehouse_ros_sqlite", "Preparing Query failed: %s", sqlite3_errmsg(db_conn));
     return ans;
   }
@@ -57,7 +59,7 @@ warehouse_ros_sqlite::sqlite3_stmt_ptr warehouse_ros_sqlite::Query::prepare(sqli
   {
     if (boost::apply_visitor(visitor, value) != SQLITE_OK)
     {
-      throw warehouse_ros::WarehouseRosException("Binding parameter to query failed");
+      throw InternalError("Binding parameter to query failed", db_conn);
     }
   }
 

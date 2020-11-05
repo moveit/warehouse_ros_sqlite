@@ -358,6 +358,19 @@ TEST_F(ConnectionTest, DropDatabase)
   }
 }
 
+TEST_F(ConnectionTest, FindOne)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll = conn_->openCollection<V>("main", "coll");
+  auto meta1 = coll.createMetadata();
+  meta1->append("x", 7);
+  coll.insert(V(), meta1);
+
+  auto query = coll.createQuery();
+  query->append("x", 9);
+  EXPECT_THROW(coll.findOne(query), warehouse_ros::NoMatchingMessageException);
+}
+
 TEST(Utils, Md5Validation)
 {
   const char* a = "4a842b65f413084dc2b10fb484ea7f17";

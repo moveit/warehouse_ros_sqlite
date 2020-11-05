@@ -29,6 +29,7 @@
 #include <warehouse_ros_sqlite/result_iteration_helper.h>
 
 #include <warehouse_ros_sqlite/metadata.h>
+#include <warehouse_ros_sqlite/exceptions.h>
 
 #include <sqlite3.h>
 #include <cassert>
@@ -49,7 +50,7 @@ bool warehouse_ros_sqlite::ResultIteratorHelper::next()
       stmt_.reset();
       return false;
     default:
-      throw std::runtime_error("sqlite3_step()");
+      throw InternalError("next() failed", stmt_.get());
   }
 }
 bool warehouse_ros_sqlite::ResultIteratorHelper::hasData() const
@@ -63,7 +64,7 @@ bool warehouse_ros_sqlite::ResultIteratorHelper::hasData() const
     case SQLITE_NULL:
       return false;
     default:
-      throw std::runtime_error("Data Column has wrong data type");
+      throw DatatypeMismatch("Data Column has wrong data type");
   }
 }
 

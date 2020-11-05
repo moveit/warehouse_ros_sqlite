@@ -105,7 +105,7 @@ void warehouse_ros_sqlite::Metadata::append(const std::string& name, sqlite3_stm
       data_[name] = sqlite3_column_double(stmt, col);
       break;
     default:
-      throw std::runtime_error("unknown datatype");
+      throw DatatypeMismatch("Unknown Datatype when reading Metadata from DB");
   }
 }
 

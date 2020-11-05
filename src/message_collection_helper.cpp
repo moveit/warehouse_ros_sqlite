@@ -32,6 +32,7 @@
 #include <warehouse_ros_sqlite/metadata.h>
 #include <warehouse_ros_sqlite/result_iteration_helper.h>
 #include <warehouse_ros_sqlite/impl/variant.h>
+#include <warehouse_ros_sqlite/exceptions.h>
 
 #include <boost/make_shared.hpp>
 #include <sqlite3.h>
@@ -49,12 +50,12 @@ warehouse_ros_sqlite::MessageCollectionHelper::findAndMatchMd5Sum(const std::arr
   const auto query = query_builder.str();
   if (sqlite3_prepare_v2(db_.get(), query.c_str(), query.size() + 1, &stmt, nullptr) != SQLITE_OK)
   {
-    throw std::runtime_error("");
+    throw InternalError("Prepare statement for findAndMatchMd5Sum() failed", db_.get());
   }
   sqlite3_stmt_ptr stmt_ptr(stmt);
   if (sqlite3_bind_text(stmt, 1, mangled_tablename_.c_str(), mangled_tablename_.size(), SQLITE_STATIC) != SQLITE_OK)
   {
-    throw std::runtime_error("");
+    throw InternalError("Bind parameter for findAndMatchMd5Sum() failed", db_.get());
   }
   switch (sqlite3_step(stmt))
   {
@@ -63,12 +64,12 @@ warehouse_ros_sqlite::MessageCollectionHelper::findAndMatchMd5Sum(const std::arr
     case SQLITE_ROW:
       break;
     default:
-      throw std::runtime_error("");
+      throw InternalError("Fetch result for findAndMatchMd5Sum() failed", db_.get());
   }
 
   if (std::size_t(sqlite3_column_bytes(stmt, 0)) != md5_bytes.size())
   {
-    throw std::runtime_error("invalid md5 value");
+    throw std::invalid_argument("invalid md5 value");
   }
   if (std::memcmp(&md5_bytes[0], sqlite3_column_blob(stmt, 0), md5_bytes.size()) == 0)
     return Md5CompareResult::MATCH;
@@ -100,6 +101,7 @@ bool warehouse_ros_sqlite::MessageCollectionHelper::initialize(const std::string
   ROS_DEBUG_NAMED("warehouse_ros_sqlite", "initialize query: %s", query.c_str());
   if (sqlite3_exec(db_.get(), query.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
   {
+    ROS_ERROR_NAMED("warehouse_ros_sqlite", "Database initialization failed: %s", sqlite3_errmsg(db_.get()));
     sqlite3_exec(db_.get(), "ROLLBACK;", nullptr, nullptr, nullptr);
     return false;
   }
@@ -111,7 +113,7 @@ void warehouse_ros_sqlite::MessageCollectionHelper::insert(char* msg, size_t msg
 {
   auto meta = reinterpret_cast<const warehouse_ros_sqlite::Metadata*>(metadata.get());
   if (!meta || !msg || !msg_size)
-    throw std::runtime_error("");
+    throw std::invalid_argument("meta, msg or msg_size is 0");
   meta->ensureColumns(db_.get(), mangled_tablename_);
   std::ostringstream query;
   query << "INSERT INTO " << escaped_mangled_name_ << " (" << schema::DATA_COLUMN_NAME;
@@ -130,21 +132,21 @@ void warehouse_ros_sqlite::MessageCollectionHelper::insert(char* msg, size_t msg
   const auto query_str = query.str();
   ROS_DEBUG_NAMED("warehouse_ros_sqlite", "insert query: %s", query_str.c_str());
   if (sqlite3_prepare_v2(db_.get(), query_str.c_str(), query_str.size() + 1, &stmt, nullptr) != SQLITE_OK)
-    throw std::runtime_error("");
+    throw InternalError("Prepare statement for insert() failed", db_.get());
   const sqlite3_stmt_ptr stmt_guard(stmt);
 
   if (sqlite3_bind_blob(stmt, 1, msg, msg_size, SQLITE_STATIC) != SQLITE_OK)
-    throw std::runtime_error("");
+    throw InternalError("Bind parameter for insert() failed", db_.get());
   warehouse_ros_sqlite::BindVisitor visitor(stmt, 2);
   for (const auto& kv : data)
   {
     if (boost::apply_visitor(visitor, std::get<1>(kv)) != SQLITE_OK)
-      throw std::runtime_error("");
+      throw InternalError("Bind parameter for insert() failed", db_.get());
   }
 
   assert(sqlite3_bind_parameter_count(stmt) == visitor.getTotalBinds());
   if (sqlite3_step(stmt) != SQLITE_DONE)
-    throw std::runtime_error("");
+    throw InternalError("insert() failed", db_.get());
 }
 
 warehouse_ros::ResultIteratorHelper::Ptr
@@ -173,7 +175,7 @@ warehouse_ros_sqlite::MessageCollectionHelper::query(warehouse_ros::Query::Const
       case SQLITE_ROW:
         break;
       default:
-        throw std::runtime_error("");
+        throw InternalError("query() failed", db_.get());
     }
   }
   return boost::make_shared<warehouse_ros_sqlite::ResultIteratorHelper>(std::move(stmt));
@@ -183,11 +185,11 @@ unsigned warehouse_ros_sqlite::MessageCollectionHelper::removeMessages(warehouse
 {
   auto pquery = dynamic_cast<warehouse_ros_sqlite::Query const*>(query.get());
   if (!pquery)
-    throw std::runtime_error("Query was not initialized by createQuery()");
+    throw std::invalid_argument("Query was not initialized by createQuery()");
   auto stmt = pquery->prepare(db_.get(), "DELETE FROM " + escaped_mangled_name_ + " WHERE ");
   if (sqlite3_step(stmt.get()) != SQLITE_DONE)
   {
-    throw std::runtime_error("");
+    throw InternalError("Prepare statement for removeMessages() failed", db_.get());
   }
   return sqlite3_changes(db_.get());
 }
@@ -217,7 +219,7 @@ void warehouse_ros_sqlite::MessageCollectionHelper::modifyMetadata(warehouse_ros
   auto query = dynamic_cast<const warehouse_ros_sqlite::Query*>(q.get());
   auto metadata = dynamic_cast<const warehouse_ros_sqlite::Metadata*>(m.get());
   if (!query || !metadata)
-    throw std::runtime_error("");
+    throw std::invalid_argument("q or m not created by createQuery() or createMetadata()");
   metadata->ensureColumns(db_.get(), mangled_tablename_);
   const int mt_count = metadata->data().size();
   if (mt_count == 0)
@@ -233,11 +235,11 @@ void warehouse_ros_sqlite::MessageCollectionHelper::modifyMetadata(warehouse_ros
   for (const auto& kv : metadata->data())
   {
     if (boost::apply_visitor(visitor, std::get<1>(kv)) != SQLITE_OK)
-      throw std::runtime_error("");
+      throw InternalError("Bind parameter failed for modifyMetadata()", db_.get());
   }
 
   if (sqlite3_step(stmt.get()) != SQLITE_DONE)
-    throw std::runtime_error("");
+    throw InternalError("modifyMetadata() failed", db_.get());
 }
 
 unsigned warehouse_ros_sqlite::MessageCollectionHelper::count()
@@ -245,11 +247,11 @@ unsigned warehouse_ros_sqlite::MessageCollectionHelper::count()
   const std::string query = "SELECT COUNT(*) FROM " + escaped_mangled_name_ + ";";
   sqlite3_stmt* stmt = nullptr;
   if (sqlite3_prepare_v2(db_.get(), query.c_str(), query.size() + 1, &stmt, nullptr) != SQLITE_OK)
-    throw std::runtime_error("");
+    throw InternalError("Prepare statement for count() failed", db_.get());
   const warehouse_ros_sqlite::sqlite3_stmt_ptr stmt_guard(stmt);
 
   if (sqlite3_step(stmt) != SQLITE_ROW)
-    throw std::runtime_error("");
+    throw InternalError("count() failed", db_.get());
 
   assert(sqlite3_column_count(stmt) == 1);
 
