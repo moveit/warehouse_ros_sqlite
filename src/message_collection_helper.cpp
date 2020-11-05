@@ -231,7 +231,7 @@ void warehouse_ros_sqlite::MessageCollectionHelper::modifyMetadata(warehouse_ros
   comma_concat_meta_column_names(query_builder, metadata->data().begin(), metadata->data().end());
   query_builder << " WHERE ";
   auto stmt = query->prepare(db_.get(), query_builder.str(), "", mt_count + 1);
-  if (! stmt)
+  if (!stmt)
     throw InternalError("modifyMetadata() failed", db_.get());
   warehouse_ros_sqlite::BindVisitor visitor(stmt.get(), 1);
   for (const auto& kv : metadata->data())
