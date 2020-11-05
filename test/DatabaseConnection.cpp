@@ -371,6 +371,34 @@ TEST_F(ConnectionTest, FindOne)
   EXPECT_THROW(coll.findOne(query), warehouse_ros::NoMatchingMessageException);
 }
 
+TEST_F(ConnectionTest, Sorting)
+{
+  using V = geometry_msgs::Vector3;
+  auto coll = conn_->openCollection<V>("main", "coll");
+  auto meta1 = coll.createMetadata();
+  meta1->append("x", 71);
+  coll.insert(V(), meta1);
+  meta1->append("x", 10);
+  coll.insert(V(), meta1);
+
+  {
+    // ascending
+    auto query = coll.createQuery();
+    const auto list1 = coll.queryList(query, false, "x", true);
+    ASSERT_EQ(list1.size(), size_t(2));
+    EXPECT_EQ(list1[0]->lookupInt("x"), 10);
+    EXPECT_EQ(list1[1]->lookupInt("x"), 71);
+  }
+  {
+    // descending
+    auto query = coll.createQuery();
+    const auto list1 = coll.queryList(query, false, "x", false);
+    ASSERT_EQ(list1.size(), size_t(2));
+    EXPECT_EQ(list1[0]->lookupInt("x"), 71);
+    EXPECT_EQ(list1[1]->lookupInt("x"), 10);
+  }
+}
+
 TEST(Utils, Md5Validation)
 {
   const char* a = "4a842b65f413084dc2b10fb484ea7f17";

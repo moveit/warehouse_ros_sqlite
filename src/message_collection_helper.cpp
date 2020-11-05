@@ -156,7 +156,7 @@ warehouse_ros_sqlite::MessageCollectionHelper::query(warehouse_ros::Query::Const
   std::string outro;
   if (!sort_by.empty())
   {
-    outro += " ORDER BY " + sort_by + (ascending ? " ASC" : " DESC");
+    outro += " ORDER BY " + schema::escape_columnname_with_prefix(sort_by) + (ascending ? " ASC" : " DESC");
   }
   auto query_ptr = dynamic_cast<const warehouse_ros_sqlite::Query*>(query.get());
   assert(query_ptr);
@@ -231,6 +231,8 @@ void warehouse_ros_sqlite::MessageCollectionHelper::modifyMetadata(warehouse_ros
   comma_concat_meta_column_names(query_builder, metadata->data().begin(), metadata->data().end());
   query_builder << " WHERE ";
   auto stmt = query->prepare(db_.get(), query_builder.str(), "", mt_count + 1);
+  if (! stmt)
+    throw InternalError("modifyMetadata() failed", db_.get());
   warehouse_ros_sqlite::BindVisitor visitor(stmt.get(), 1);
   for (const auto& kv : metadata->data())
   {
