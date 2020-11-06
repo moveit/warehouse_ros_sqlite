@@ -83,12 +83,12 @@ constexpr const char* DB_NAME = "main";
 constexpr const char* METADATA_COLUMN_PREFIX = "M_";
 constexpr const char* DATA_COLUMN_NAME = "Data";
 constexpr const char* TABLE_NAME_PREFIX = "T_";
-constexpr const char* M_D5_TABLE_NAME = "MessageMD5s";
+constexpr const char* M_D5_TABLE_NAME = "WarehouseIndex";
 constexpr const char* M_D5_TABLE_INDEX_COLUMN = "MangledTableName";
 constexpr const char* M_D5_TABLE_M_D5_COLUMN = "MessageMD5";
 constexpr const char* M_D5_TABLE_DATATYPE_COLUMN = "MessageDataType";
-constexpr const char* M_D5_TABLE_TABLE_COLUMN = "VirtualTableName";
-constexpr const char* M_D5_TABLE_DATABASE_COLUMN = "VirtualDatabaseName";
+constexpr const char* M_D5_TABLE_TABLE_COLUMN = "WarehouseCollectionName";
+constexpr const char* M_D5_TABLE_DATABASE_COLUMN = "WarehouseDatabaseName";
 const int DATA_COLUMN_INDEX = 0;
 
 using escaped_columnname = std::string;

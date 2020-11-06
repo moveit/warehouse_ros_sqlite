@@ -181,7 +181,7 @@ void warehouse_ros_sqlite::sqlite3_delete(sqlite3* db)
 }
 
 warehouse_ros_sqlite::InternalError::InternalError(const char* msg, sqlite3* db)
-  : warehouse_ros::WarehouseRosException(boost::format("%s %s") % msg % sqlite3_errmsg(db))
+  : warehouse_ros::WarehouseRosException(boost::format("%1% %2%") % msg % sqlite3_errmsg(db))
 {
 }
 warehouse_ros_sqlite::InternalError::InternalError(const char* msg, sqlite3_stmt* stmt)
