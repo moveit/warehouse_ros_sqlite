@@ -32,6 +32,7 @@
 #include <array>
 #include <climits>
 #include <cstdlib>
+#include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.h>
 
 extern "C" {
 struct sqlite3_stmt;
@@ -40,11 +41,11 @@ struct sqlite3;
 
 namespace warehouse_ros_sqlite
 {
-struct Sqlite3StmtDeleter
+struct WAREHOUSE_ROS_SQLITE_EXPORT Sqlite3StmtDeleter
 {
   void operator()(sqlite3_stmt* stmt) const;
 };
-void sqlite3_delete(sqlite3* db);
+WAREHOUSE_ROS_SQLITE_EXPORT void sqlite3_delete(sqlite3* db);
 
 using sqlite3_stmt_ptr = std::unique_ptr<sqlite3_stmt, Sqlite3StmtDeleter>;
 using sqlite3_ptr = std::shared_ptr<sqlite3>;
@@ -119,11 +120,11 @@ inline escaped_tablename escape_and_mangle_database_and_collection_name(const st
 
 }  // namespace schema
 
-struct NullValue
+struct WAREHOUSE_ROS_SQLITE_EXPORT NullValue
 {
 };
 
-inline std::array<unsigned char, 16> parse_md5_hexstring(const std::string& md5)
+inline WAREHOUSE_ROS_SQLITE_EXPORT std::array<unsigned char, 16> parse_md5_hexstring(const std::string& md5)
 {
   if (md5.size() != 32)
   {

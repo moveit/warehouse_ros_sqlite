@@ -32,6 +32,8 @@
 #include <boost/variant.hpp>
 #include <map>
 #include <warehouse_ros_sqlite/utils.h>
+#include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.h>
+
 
 extern "C" {
 struct sqlite3_stmt;
@@ -40,7 +42,7 @@ struct sqlite3;
 
 namespace warehouse_ros_sqlite
 {
-class Metadata : public warehouse_ros::Metadata
+class WAREHOUSE_ROS_SQLITE_EXPORT Metadata : public warehouse_ros::Metadata
 {
 public:
   using Variant = boost::variant<NullValue, std::string, double, int>;

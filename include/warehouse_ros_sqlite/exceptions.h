@@ -29,6 +29,7 @@
 #pragma once
 
 #include <warehouse_ros/exceptions.h>
+#include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.h>
 #include <boost/format.hpp>
 
 extern "C" {
@@ -38,19 +39,19 @@ struct sqlite3_stmt;
 
 namespace warehouse_ros_sqlite
 {
-struct InternalError : public warehouse_ros::WarehouseRosException
+struct WAREHOUSE_ROS_SQLITE_EXPORT InternalError : public warehouse_ros::WarehouseRosException
 {
   using warehouse_ros::WarehouseRosException::WarehouseRosException;
   InternalError(const char* msg, sqlite3* db);
   InternalError(const char* msg, sqlite3_stmt* stmt);
 };
 
-struct DatatypeMismatch : public warehouse_ros::WarehouseRosException
+struct WAREHOUSE_ROS_SQLITE_EXPORT DatatypeMismatch : public warehouse_ros::WarehouseRosException
 {
   using warehouse_ros::WarehouseRosException::WarehouseRosException;
 };
 
-struct SchemaVersionMismatch : public warehouse_ros::WarehouseRosException
+struct WAREHOUSE_ROS_SQLITE_EXPORT SchemaVersionMismatch : public warehouse_ros::WarehouseRosException
 {
   int version_in_database_, version_compiled_in_;
   using warehouse_ros::WarehouseRosException::WarehouseRosException;

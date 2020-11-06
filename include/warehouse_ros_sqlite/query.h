@@ -34,10 +34,12 @@
 #include <sstream>
 
 #include <warehouse_ros_sqlite/utils.h>
+#include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.h>
+
 
 namespace warehouse_ros_sqlite
 {
-class Query : public warehouse_ros::Query
+class WAREHOUSE_ROS_SQLITE_EXPORT Query : public warehouse_ros::Query
 {
 public:
   using Variant = boost::variant<std::string, double, int>;

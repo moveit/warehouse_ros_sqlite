@@ -31,10 +31,11 @@
 #include <warehouse_ros/database_connection.h>
 #include <warehouse_ros/message_collection.h>
 #include <warehouse_ros_sqlite/utils.h>
+#include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.h>
 
 namespace warehouse_ros_sqlite
 {
-class DatabaseConnection : public warehouse_ros::DatabaseConnection
+class WAREHOUSE_ROS_SQLITE_EXPORT DatabaseConnection : public warehouse_ros::DatabaseConnection
 {
   sqlite3_ptr db_;
   std::string uri_;

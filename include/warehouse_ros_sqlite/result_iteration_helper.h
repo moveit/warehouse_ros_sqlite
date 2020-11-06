@@ -30,10 +30,11 @@
 
 #include <warehouse_ros/query_results.h>
 #include <warehouse_ros_sqlite/utils.h>
+#include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.h>
 
 namespace warehouse_ros_sqlite
 {
-class ResultIteratorHelper : public warehouse_ros::ResultIteratorHelper
+class WAREHOUSE_ROS_SQLITE_EXPORT ResultIteratorHelper : public warehouse_ros::ResultIteratorHelper
 {
   sqlite3_stmt_ptr stmt_;
   std::vector<std::pair<std::string, int>> metadata_cols_;

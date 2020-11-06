@@ -30,10 +30,12 @@
 
 #include <warehouse_ros/message_collection.h>
 #include <warehouse_ros_sqlite/utils.h>
+#include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.h>
+
 
 namespace warehouse_ros_sqlite
 {
-class MessageCollectionHelper : public warehouse_ros::MessageCollectionHelper
+class WAREHOUSE_ROS_SQLITE_EXPORT MessageCollectionHelper : public warehouse_ros::MessageCollectionHelper
 {
   sqlite3_ptr db_;
   std::string collection_name_;
