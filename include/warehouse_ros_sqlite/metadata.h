@@ -34,7 +34,6 @@
 #include <warehouse_ros_sqlite/utils.h>
 #include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.h>
 
-
 extern "C" {
 struct sqlite3_stmt;
 struct sqlite3;

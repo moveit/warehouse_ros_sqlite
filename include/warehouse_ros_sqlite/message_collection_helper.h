@@ -32,7 +32,6 @@
 #include <warehouse_ros_sqlite/utils.h>
 #include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.h>
 
-
 namespace warehouse_ros_sqlite
 {
 class WAREHOUSE_ROS_SQLITE_EXPORT MessageCollectionHelper : public warehouse_ros::MessageCollectionHelper
