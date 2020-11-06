@@ -76,6 +76,6 @@ protected:
                                                                    const std::string& collection_name) override;
   void initDb();
   std::vector<std::string> getTablesOfDatabase(const std::string& db_name);
-  bool SchemaVersionSet();
+  bool schemaVersionSet();
 };
 }  // namespace warehouse_ros_sqlite

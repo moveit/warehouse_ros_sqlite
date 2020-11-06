@@ -153,7 +153,7 @@ std::string warehouse_ros_sqlite::DatabaseConnection::messageType(const std::str
 
 void warehouse_ros_sqlite::DatabaseConnection::initDb()
 {
-  if (SchemaVersionSet())
+  if (schemaVersionSet())
     return;
   std::ostringstream query_builder;
   query_builder << "PRAGMA user_version = " << schema::VERSION << ";"
@@ -167,7 +167,7 @@ void warehouse_ros_sqlite::DatabaseConnection::initDb()
     throw InternalError("Could not initialize Database", db_.get());
 }
 
-bool warehouse_ros_sqlite::DatabaseConnection::SchemaVersionSet()
+bool warehouse_ros_sqlite::DatabaseConnection::schemaVersionSet()
 {
   sqlite3_stmt* stmt = nullptr;
   if (sqlite3_prepare_v2(db_.get(), "PRAGMA user_version;", -1, &stmt, nullptr) != SQLITE_OK)
