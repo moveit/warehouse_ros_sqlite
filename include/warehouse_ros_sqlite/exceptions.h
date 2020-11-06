@@ -49,4 +49,18 @@ struct DatatypeMismatch : public warehouse_ros::WarehouseRosException
 {
   using warehouse_ros::WarehouseRosException::WarehouseRosException;
 };
+
+struct SchemaVersionMismatch : public warehouse_ros::WarehouseRosException
+{
+  int version_in_database_, version_compiled_in_;
+  using warehouse_ros::WarehouseRosException::WarehouseRosException;
+  SchemaVersionMismatch(int version_in_database, int version_compiled_in)
+    : warehouse_ros::WarehouseRosException(
+          boost::format("Database schema version mismatch, stored in file: %1%, compiled in version: %2%") %
+          version_in_database % version_compiled_in)
+    , version_in_database_(version_in_database)
+    , version_compiled_in_(version_compiled_in)
+  {
+  }
+};
 }  // namespace warehouse_ros_sqlite

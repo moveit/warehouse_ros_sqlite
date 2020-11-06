@@ -10,6 +10,7 @@ together to get the name of the SQLite table.
 The metadata of the messages (at least a unique id and the creation time)
 are stored along the data in the SQLite table of every collection.
 The table `WarehouseIndex` contains details of each collection and its mangled table name.
+The version of the database scheme (currently 10) is stored in the [sqlite pragma](https://www.sqlite.org/pragma.html#pragma_user_version) `user_version`.
 
 ### Structure of a collection table
 

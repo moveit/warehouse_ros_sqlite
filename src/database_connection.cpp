@@ -43,12 +43,15 @@
 /// Returns true if the connection was succesfully established.
 bool warehouse_ros_sqlite::DatabaseConnection::connect()
 {
-  sqlite3* s = nullptr;
-  if (sqlite3_open(uri_.c_str(), &s) != SQLITE_OK)
+  if (!db_)
   {
-    return false;
+    sqlite3* s = nullptr;
+    if (sqlite3_open(uri_.c_str(), &s) != SQLITE_OK)
+    {
+      return false;
+    }
+    db_.reset(s, warehouse_ros_sqlite::sqlite3_delete);
   }
-  db_.reset(s, warehouse_ros_sqlite::sqlite3_delete);
   initDb();
   return true;
 }
@@ -150,8 +153,11 @@ std::string warehouse_ros_sqlite::DatabaseConnection::messageType(const std::str
 
 void warehouse_ros_sqlite::DatabaseConnection::initDb()
 {
+  if (SchemaVersionSet())
+    return;
   std::ostringstream query_builder;
-  query_builder << "CREATE TABLE IF NOT EXISTS " << schema::M_D5_TABLE_NAME << " ( " << schema::M_D5_TABLE_INDEX_COLUMN
+  query_builder << "PRAGMA user_version = " << schema::VERSION << ";"
+                << "CREATE TABLE " << schema::M_D5_TABLE_NAME << " ( " << schema::M_D5_TABLE_INDEX_COLUMN
                 << " TEXT PRIMARY KEY, " << schema::M_D5_TABLE_M_D5_COLUMN << " BLOB NOT NULL, "
                 << schema::M_D5_TABLE_TABLE_COLUMN << " TEXT NOT NULL, " << schema::M_D5_TABLE_DATABASE_COLUMN
                 << " TEXT NOT NULL, " << schema::M_D5_TABLE_DATATYPE_COLUMN << " TEXT NOT NULL);";
@@ -159,6 +165,28 @@ void warehouse_ros_sqlite::DatabaseConnection::initDb()
   ROS_DEBUG_NAMED("warehouse_ros_sqlite", "MD5 table init: %s", query.c_str());
   if (sqlite3_exec(db_.get(), query.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
     throw InternalError("Could not initialize Database", db_.get());
+}
+
+bool warehouse_ros_sqlite::DatabaseConnection::SchemaVersionSet()
+{
+  sqlite3_stmt* stmt = nullptr;
+  if (sqlite3_prepare_v2(db_.get(), "PRAGMA user_version;", -1, &stmt, nullptr) != SQLITE_OK)
+    throw InternalError("Could not get schema version", db_.get());
+  sqlite3_stmt_ptr stmt_guard(std::exchange(stmt, nullptr));
+  if (sqlite3_step(stmt_guard.get()) != SQLITE_ROW)
+    throw InternalError("Could not get schema version", db_.get());
+  const int current_schema_version = sqlite3_column_int(stmt_guard.get(), 0);
+  if (current_schema_version == 0)
+  {
+    return false;
+  }
+  else
+  {
+    if (current_schema_version == schema::VERSION)
+      return true;
+    else
+      throw SchemaVersionMismatch(current_schema_version, schema::VERSION);
+  }
 }
 
 warehouse_ros::MessageCollectionHelper::Ptr

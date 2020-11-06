@@ -40,6 +40,10 @@ class DatabaseConnection : public warehouse_ros::DatabaseConnection
   std::string uri_;
 
 public:
+  DatabaseConnection() = default;
+  DatabaseConnection(sqlite3_ptr db) : db_(std::move(db))
+  {
+  }
   /// \brief Set database connection params.
   bool setParams(const std::string& host, unsigned /*port*/, float /*timeout*/ = 60.0) override
   {
@@ -72,5 +76,6 @@ protected:
                                                                    const std::string& collection_name) override;
   void initDb();
   std::vector<std::string> getTablesOfDatabase(const std::string& db_name);
+  bool SchemaVersionSet();
 };
 }  // namespace warehouse_ros_sqlite

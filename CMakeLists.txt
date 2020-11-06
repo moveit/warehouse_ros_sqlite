@@ -52,4 +52,7 @@ install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(DBConnection test/DatabaseConnection.cpp)
   target_link_libraries(DBConnection ${PROJECT_NAME})
+
+  catkin_add_gtest(SchemaVersion test/SchemaVersion.cpp)
+  target_link_libraries(SchemaVersion ${PROJECT_NAME} PkgConfig::SQLite3)
 endif()

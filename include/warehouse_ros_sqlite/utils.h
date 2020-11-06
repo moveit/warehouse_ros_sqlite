@@ -90,6 +90,7 @@ constexpr const char* M_D5_TABLE_DATATYPE_COLUMN = "MessageDataType";
 constexpr const char* M_D5_TABLE_TABLE_COLUMN = "WarehouseCollectionName";
 constexpr const char* M_D5_TABLE_DATABASE_COLUMN = "WarehouseDatabaseName";
 const int DATA_COLUMN_INDEX = 0;
+const int VERSION = 10;
 
 using escaped_columnname = std::string;
 using escaped_tablename = std::string;
