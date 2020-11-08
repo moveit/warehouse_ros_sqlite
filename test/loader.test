@@ -1,0 +1,4 @@
+<launch>
+  <param name="warehouse_plugin" value="warehouse_ros_sqlite::DatabaseConnection"/>
+  <test test-name="test_TestLoader" pkg="warehouse_ros_sqlite" type="TestLoader"/>
+</launch>

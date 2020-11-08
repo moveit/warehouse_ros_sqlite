@@ -62,4 +62,8 @@ if(CATKIN_ENABLE_TESTING)
 
   catkin_add_gtest(SchemaVersion test/SchemaVersion.cpp)
   target_link_libraries(SchemaVersion ${PROJECT_NAME} PkgConfig::SQLite3)
+
+  add_rostest_gtest(TestLoader test/loader.test test/TestLoader.cpp)
+  target_include_directories(TestLoader SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+  target_link_libraries(TestLoader ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 endif()
