@@ -39,6 +39,27 @@
 #include <ros/console.h>
 #include <sstream>
 
+#include <thread>
+#include <chrono>
+
+namespace
+{
+int busy_handler(void* /* user_ptr */, int times_called_before)
+{
+  constexpr auto wait_interval =
+      std::chrono::milliseconds{ warehouse_ros_sqlite::DatabaseConnection::BUSY_WAIT_MILLISECS };
+  if (times_called_before >= warehouse_ros_sqlite::DatabaseConnection::BUSY_MAX_RETRIES)
+    return 0;
+
+  std::this_thread::sleep_for((times_called_before + 1) * wait_interval);
+  return 1;
+}
+}  // namespace
+
+// instance to avoid linking errors
+const int warehouse_ros_sqlite::DatabaseConnection::BUSY_WAIT_MILLISECS;
+const int warehouse_ros_sqlite::DatabaseConnection::BUSY_MAX_RETRIES;
+
 /// Setup the database connection. This call assumes setParams() has been previously called.
 /// Returns true if the connection was succesfully established.
 bool warehouse_ros_sqlite::DatabaseConnection::connect()
@@ -51,6 +72,10 @@ bool warehouse_ros_sqlite::DatabaseConnection::connect()
       return false;
     }
     db_.reset(s, warehouse_ros_sqlite::sqlite3_delete);
+  }
+  if (sqlite3_busy_handler(db_.get(), busy_handler, nullptr) != SQLITE_OK)
+  {
+    throw InternalError("setting busy handler failed", db_.get());
   }
   initDb();
   return true;

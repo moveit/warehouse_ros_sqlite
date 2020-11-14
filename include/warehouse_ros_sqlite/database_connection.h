@@ -72,6 +72,9 @@ public:
   /// \brief Return the ROS Message type of a given collection
   std::string messageType(const std::string& db_name, const std::string& collection_name) override;
 
+  static const int BUSY_WAIT_MILLISECS = 20;
+  static const int BUSY_MAX_RETRIES = 10;
+
 protected:
   warehouse_ros::MessageCollectionHelper::Ptr openCollectionHelper(const std::string& db_name,
                                                                    const std::string& collection_name) override;

@@ -8,7 +8,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(PkgConfig REQUIRED)
-find_package(Boost REQUIRED COMPONENTS)
+find_package(Boost REQUIRED COMPONENTS filesystem)
 
 pkg_check_modules(SQLite3 REQUIRED IMPORTED_TARGET sqlite3)
 
@@ -40,7 +40,7 @@ generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_NAME}/${PROJEC
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} PkgConfig::SQLite3)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} PkgConfig::SQLite3)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
@@ -66,4 +66,8 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(TestLoader test/loader.test test/TestLoader.cpp)
   target_include_directories(TestLoader SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
   target_link_libraries(TestLoader ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+  catkin_add_gtest(BusyHandler test/BusyHandler.cpp)
+  target_include_directories(TestLoader SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+  target_link_libraries(BusyHandler ${PROJECT_NAME} ${Boost_LIBRARIES})
 endif()
