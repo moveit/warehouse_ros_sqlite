@@ -8,24 +8,15 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(PkgConfig REQUIRED)
-find_package(Boost REQUIRED COMPONENTS filesystem)
 
 pkg_check_modules(SQLite3 REQUIRED IMPORTED_TARGET sqlite3)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rostest
-  rostime
-  warehouse_ros
-  class_loader
-)
-
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS warehouse_ros roscpp
-)
+find_package(ament_cmake REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem)
+find_package(class_loader REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(warehouse_ros REQUIRED)
 
 add_library(${PROJECT_NAME}
   src/database_connection.cpp
@@ -34,40 +25,69 @@ add_library(${PROJECT_NAME}
   src/query.cpp
   src/result_iteration_helper.cpp
 )
+target_include_directories(${PROJECT_NAME} PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>"
+)
 # generate macros for symbol visibility
 include(GenerateExportHeader)
-generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_NAME}/${PROJECT_NAME}_export.h)
+generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_NAME}/${PROJECT_NAME}_export.hpp)
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
+target_link_libraries(${PROJECT_NAME} OpenSSL::Crypto)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} PkgConfig::SQLite3)
-target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}
+  PkgConfig::SQLite3
+)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
+ament_target_dependencies(${PROJECT_NAME}
+  class_loader
+  rclcpp
+  warehouse_ros
+)
 
-
-install(FILES sqlite_database_connection_plugin_description.xml
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
-install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
 install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}_export.h
-        DESTINATION include/${PROJECT_NAME})
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}_export.hpp
+  DESTINATION include/${PROJECT_NAME}
+)
 
-if(CATKIN_ENABLE_TESTING)
-  catkin_add_gtest(DBConnection test/DatabaseConnection.cpp)
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+
+  ament_add_gtest(DBConnection test/DatabaseConnection.cpp)
   target_link_libraries(DBConnection ${PROJECT_NAME})
+  ament_add_gtest(SchemaVersion test/SchemaVersion.cpp)
+  target_link_libraries(SchemaVersion ${PROJECT_NAME})
 
-  catkin_add_gtest(SchemaVersion test/SchemaVersion.cpp)
-  target_link_libraries(SchemaVersion ${PROJECT_NAME} PkgConfig::SQLite3)
+  ament_add_gtest_executable(TestLoader test/TestLoader.cpp)
+  target_link_libraries(TestLoader ${PROJECT_NAME})
+  target_link_libraries(TestLoader ${Boost_LIBRARIES})
 
-  add_rostest_gtest(TestLoader test/loader.test test/TestLoader.cpp)
-  target_include_directories(TestLoader SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-  target_link_libraries(TestLoader ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+  ament_add_gtest(BusyHandler test/BusyHandler.cpp)
+  target_link_libraries(BusyHandler ${PROJECT_NAME})
+  target_link_libraries(BusyHandler ${Boost_LIBRARIES})
 
-  catkin_add_gtest(BusyHandler test/BusyHandler.cpp)
-  target_include_directories(TestLoader SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-  target_link_libraries(BusyHandler ${PROJECT_NAME} ${Boost_LIBRARIES})
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
 endif()
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(
+  ament_cmake
+  rclcpp
+  warehouse_ros
+  class_loader
+  OpenSSL
+)
+
+pluginlib_export_plugin_description_file(warehouse_ros sqlite_database_connection_plugin_description.xml)
+
+ament_package()

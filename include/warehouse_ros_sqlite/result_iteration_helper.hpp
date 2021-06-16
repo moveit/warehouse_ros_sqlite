@@ -28,37 +28,39 @@
 
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include <gtest/gtest.h>
-#include <warehouse_ros/database_loader.h>
-#include <geometry_msgs/msg/vector3.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <memory>
+#ifndef WAREHOUSE_ROS_SQLITE__RESULT_ITERATION_HELPER_HPP_
+#define WAREHOUSE_ROS_SQLITE__RESULT_ITERATION_HELPER_HPP_
 
-TEST(DatabaseLoader, LoadSQLite)
+#include <warehouse_ros/query_results.h>
+#include <warehouse_ros_sqlite/utils.hpp>
+#include <warehouse_ros_sqlite/warehouse_ros_sqlite_export.hpp>
+
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace warehouse_ros_sqlite
 {
-  const auto node = std::make_shared<rclcpp::Node>("tester");
-  warehouse_ros::DatabaseLoader l(node);
-
-  const auto d = l.loadDatabase();
-
-  ASSERT_TRUE(static_cast<bool>(d));
-  d->setParams(":memory:", 0);
-
-  ASSERT_TRUE(d->connect());
-
-  using V = geometry_msgs::msg::Vector3;
-  auto coll = d->openCollection<V>("main", "coll");
-  auto meta1 = coll.createMetadata();
-  meta1->append("x", 3);
-
-  coll.insert(V(), meta1);
-
-  EXPECT_EQ(coll.count(), 1U);
-}
-
-int main(int argc, char ** argv)
+class WAREHOUSE_ROS_SQLITE_EXPORT ResultIteratorHelper : public warehouse_ros::ResultIteratorHelper
 {
-  testing::InitGoogleTest(&argc, argv);
-  rclcpp::init(argc, argv);
-  return RUN_ALL_TESTS();
-}
+  sqlite3_stmt_ptr stmt_;
+  std::vector<std::pair<std::string, int>> metadata_cols_;
+  void initMetadataCols();
+
+public:
+  ResultIteratorHelper() = default;
+  explicit ResultIteratorHelper(sqlite3_stmt_ptr stmt)
+  : stmt_(std::move(stmt))
+  {
+    initMetadataCols();
+  }
+  bool next() override;
+  bool hasData() const override;
+  warehouse_ros::Metadata::ConstPtr metadata() const override;
+  std::string message() const override;
+};
+
+}  // namespace warehouse_ros_sqlite
+
+
+#endif  // WAREHOUSE_ROS_SQLITE__RESULT_ITERATION_HELPER_HPP_

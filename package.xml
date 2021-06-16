@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>warehouse_ros_sqlite</name>
   <version>1.0.0</version>
   <description>
@@ -10,20 +10,25 @@
   <license>BSD</license>
   <url>http://ros.org/wiki/warehouse_ros</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <build_depend>boost</build_depend>
   <build_depend>libsqlite3-dev</build_depend>
 
   <depend>warehouse_ros</depend>
-  <depend>roscpp</depend>
-  <depend>rostime</depend>
   <depend>class_loader</depend>
-
-  <test_depend>rostest</test_depend>
+  <depend>rclcpp</depend>
 
   <exec_depend>sqlite3</exec_depend>
 
+  <test_depend>ament_cmake_copyright</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>geometry_msgs</test_depend>
+
   <export>
+    <build_type>ament_cmake</build_type>
     <warehouse_ros plugin="${prefix}/sqlite_database_connection_plugin_description.xml"/>
   </export>
 </package>
