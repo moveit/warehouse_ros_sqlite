@@ -14,8 +14,8 @@ Create a file named `warehouse.rosinstall` with the following content:
 ```yaml
 - git:
     local-name: warehouse_ros
-    uri: https://github.com/gleichdick/warehouse_ros.git
-    version: cleanup
+    uri: https://github.com/ros-planning/warehouse_ros.git
+    version: kinetic-devel
 - git:
     local-name: warehouse_ros_sqlite
     uri: https://github.com/gleichdick/warehouse_ros_sqlite.git
