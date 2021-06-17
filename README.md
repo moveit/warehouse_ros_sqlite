@@ -1,49 +1,46 @@
-[![Build Status](https://travis-ci.com/gleichdick/warehouse_ros_sqlite.svg?branch=master)](https://travis-ci.com/gleichdick/warehouse_ros_sqlite)
-[![codecov](https://codecov.io/gh/gleichdick/warehouse_ros_sqlite/branch/master/graph/badge.svg?token=QHPGDZM8HX)](https://codecov.io/gh/gleichdick/warehouse_ros_sqlite)
+[![Build status](https://github.com/gleichdick/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml/badge.svg?branch=ros2)](https://github.com/gleichdick/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml)
+[![codecov](https://codecov.io/gh/gleichdick/warehouse_ros_sqlite/branch/ros2/graph/badge.svg?token=QHPGDZM8HX)](https://codecov.io/gh/gleichdick/warehouse_ros_sqlite)
 
 # SQLite backend for warehouse_ros
 
 This is a storage backend for warehouse_ros using SQLite.
 The name of the sqlite file will be taken from the ROS parameter `warehouse_host`. The `warehouse_port` will be ignored.
-
+Note that the MD5 sums of the messages have changed from ROS1 to ROS2,
+so your ROS1 sqlite database won't work with ROS2.
 
 ## Installation
 
-Create a folder which will become your catkin workspace.
-Create a file named `warehouse.rosinstall` with the following content:
+Make sure that you have [installed ROS2](https://docs.ros.org/en/rolling/Installation.html)
+and activated it (e.g. with `source /opt/ros/foxy/setup.bash`).
+Create a folder which will become your workspace.
+Create a file named `warehouse.repos` with the following content:
 ```yaml
-- git:
-    local-name: warehouse_ros
-    uri: https://github.com/gleichdick/warehouse_ros.git
-    version: cleanup
-- git:
-    local-name: warehouse_ros_sqlite
-    uri: https://github.com/gleichdick/warehouse_ros_sqlite.git
-    version: master
+repositories:
+  warehouse_ros:
+    type: git
+    url: https://github.com/gleichdick/warehouse_ros
+    version: cleanup_and_md5
+  warehouse_ros_sqlite:
+    type: git
+    url: https://github.com/gleichdick/warehouse_ros_sqlite
+    version: ros2
 ```
 
 Now open a terminal and navigate to this folder.
-Make sure to have `wstool` and `catkin_tools` installed.
-Initialize your workspace and fetch the source files with `wstool`:
+Initialize your workspace and fetch the source files with `vcs` and `rosdep`:
 ```bash
+$ vcs import src < warehouse.repos
 $ rosdep update
-$ wstool init src
-$ wstool merge -t src warehouse.rosinstall
-$ wstool update -t src
+$ rosdep install --from-paths src --ignore-src
 ```
-Install the missing dependencies:
+
+Build your workspace with colcon:
 ```bash
-$ rosdep install -y --from-paths src --ignore-src
-```
-Build your workspace with catkin:
-```bash
-$ catkin config --install --cmake-args -DCMAKE_BUILD_TYPE=Release
-...
-$ catkin build
+$ colcon build
 ```
 After that, activate your workspace:
 ```bash
-$ source install/setup.bash
+$ source install/local_setup.bash
 ```
 The plugin is now installed, please refer to the warehouse_ros documentation for the usage of the interface or have a look into the test files in `test/`.
 
