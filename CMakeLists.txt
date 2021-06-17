@@ -27,7 +27,7 @@ catkin_package(
   CATKIN_DEPENDS warehouse_ros roscpp
 )
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   src/database_connection.cpp
   src/message_collection_helper.cpp
   src/metadata.cpp
