@@ -7,11 +7,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-find_package(PkgConfig REQUIRED)
-
-pkg_check_modules(SQLite3 REQUIRED IMPORTED_TARGET sqlite3)
-
 find_package(ament_cmake REQUIRED)
+find_package(sqlite3_vendor REQUIRED)
+find_package(SQLite3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package(class_loader REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -37,7 +35,7 @@ target_link_libraries(${PROJECT_NAME} OpenSSL::Crypto)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
 target_link_libraries(${PROJECT_NAME}
-  PkgConfig::SQLite3
+  SQLite::SQLite3
 )
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 ament_target_dependencies(${PROJECT_NAME}
@@ -86,6 +84,8 @@ ament_export_dependencies(
   warehouse_ros
   class_loader
   OpenSSL
+  sqlite3_vendor
+  SQLite3
 )
 
 pluginlib_export_plugin_description_file(warehouse_ros sqlite_database_connection_plugin_description.xml)
