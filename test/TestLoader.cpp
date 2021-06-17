@@ -33,10 +33,14 @@
 #include <geometry_msgs/msg/vector3.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <memory>
+#include <string>
 
 TEST(DatabaseLoader, LoadSQLite)
 {
   const auto node = std::make_shared<rclcpp::Node>("tester");
+  node->declare_parameter<std::string>(
+    "warehouse_plugin",
+    "warehouse_ros_sqlite::DatabaseConnection");
   warehouse_ros::DatabaseLoader l(node);
 
   const auto d = l.loadDatabase();

@@ -18,7 +18,7 @@ find_package(OpenSSL REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(warehouse_ros REQUIRED)
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   src/database_connection.cpp
   src/message_collection_helper.cpp
   src/metadata.cpp
@@ -67,7 +67,7 @@ if(BUILD_TESTING)
   ament_add_gtest(SchemaVersion test/SchemaVersion.cpp)
   target_link_libraries(SchemaVersion ${PROJECT_NAME})
 
-  ament_add_gtest_executable(TestLoader test/TestLoader.cpp)
+  ament_add_gtest(TestLoader test/TestLoader.cpp)
   target_link_libraries(TestLoader ${PROJECT_NAME})
   target_link_libraries(TestLoader ${Boost_LIBRARIES})
 

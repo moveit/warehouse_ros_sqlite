@@ -1,4 +1,4 @@
-<library path="libwarehouse_ros_sqlite">
+<library path="warehouse_ros_sqlite">
   <class type="warehouse_ros_sqlite::DatabaseConnection" base_class_type="warehouse_ros::DatabaseConnection">
     <description>
     	This is an implementation of warehouse_ros for SQLite
