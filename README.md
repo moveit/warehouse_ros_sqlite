@@ -49,29 +49,73 @@ The plugin is now installed, please refer to the warehouse_ros documentation for
 You can use this plugin together with the whole MoveIt stack,
 but you may need to adapt the .launch files.
 Make sure that this plugin is loaded instead of `warehouse_ros_mongo`.
-Remember to set `db:=True` on your `roslaunch` command.
 If you're using RViz, you'll have to enter the path to your database file into the `Host` field and click on `connect`.
 
-### warehouse.launch
+### MoveIt patch
+
+MoveIt needs to be [adapted](https://github.com/ros-planning/moveit2/pull/513),
+otherwise RViz2 does not respect the `warehouse_plugin` parameter.
+
+### run_move_group.launch.py
+
+The demo launch file needs a bit attention, too.
 
 ```diff
-  <!-- Run the DB server -->
--  <node name="$(anon mongo_wrapper_ros)" cwd="ROS_HOME" type="mongo_wrapper_ros.py" pkg="warehouse_ros_mongo">
--    <param name="overwrite" value="false"/>
--    <param name="database_path" value="$(arg moveit_warehouse_database_path)" />
--  </node>
-```
+--- install/run_move_group/share/run_move_group/launch/run_move_group.launch.py 2021-06-20 15:24:38.000000000 +0000
++++ install/run_move_group/share/run_move_group/launch/run_move_group_sqlite.launch.py  2021-06-20 20:46:42.061550552 +0000
+@@ -89,6 +89,11 @@
+         "publish_transforms_updates": True,
+     }
 
-### warehouse_settings.launch.xml
++    warehouse_ros_config = {
++        "warehouse_plugin": "warehouse_ros_sqlite::DatabaseConnection",
++        "warehouse_host": "/path/to/my/warehouse_db.sqlite",
++    }
++
+     # Start the actual move_group node/action server
+     run_move_group_node = Node(
+         package="moveit_ros_move_group",
+@@ -102,6 +107,7 @@
+             trajectory_execution,
+             moveit_controllers,
+             planning_scene_monitor_parameters,
++            warehouse_ros_config,
+         ],
+     )
 
-```diff
-   <!-- The default DB host for moveit -->
--  <arg name="moveit_warehouse_host" default="localhost" />
-+  <arg name="moveit_warehouse_host" default="/path/to/your/file.sqlite" />
+@@ -120,6 +126,7 @@
+             robot_description_semantic,
+             ompl_planning_pipeline_config,
+             kinematics_yaml,
++            warehouse_ros_config,
+         ],
+     )
 
-   <!-- Set parameters for the warehouse -->
-   <param name="warehouse_port" value="$(arg moveit_warehouse_port)"/>
-   <param name="warehouse_host" value="$(arg moveit_warehouse_host)"/>
--  <param name="warehouse_plugin" value="warehouse_ros_mongo::MongoDatabaseConnection" />
-+  <param name="warehouse_plugin" value="warehouse_ros_sqlite::DatabaseConnection" />
+@@ -172,18 +179,6 @@
+             )
+         ]
+
+-    # Warehouse mongodb server
+-    mongodb_server_node = Node(
+-        package="warehouse_ros_mongo",
+-        executable="mongo_wrapper_ros.py",
+-        parameters=[
+-            {"warehouse_port": 33829},
+-            {"warehouse_host": "localhost"},
+-            {"warehouse_plugin": "warehouse_ros_mongo::MongoDatabaseConnection"},
+-        ],
+-        output="screen",
+-    )
+-
+     return LaunchDescription(
+         [
+             rviz_node,
+@@ -191,7 +186,6 @@
+             robot_state_publisher,
+             run_move_group_node,
+             ros2_control_node,
+-            mongodb_server_node,
+         ]
+         + load_controllers
+     )
 ```
