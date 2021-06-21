@@ -28,8 +28,6 @@
 
 // SPDX-License-Identifier: BSD-3-Clause
 
-#pragma once
-
 #ifndef WAREHOUSE_ROS_SQLITE__DATABASE_CONNECTION_HPP_
 #define WAREHOUSE_ROS_SQLITE__DATABASE_CONNECTION_HPP_
 
