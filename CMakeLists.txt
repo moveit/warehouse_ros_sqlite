@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.7.2)
 project(warehouse_ros_sqlite)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -23,6 +21,8 @@ add_library(${PROJECT_NAME} SHARED
   src/query.cpp
   src/result_iteration_helper.cpp
 )
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_VISIBILITY_PRESET hidden)
+set_property(TARGET ${PROJECT_NAME} PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 target_include_directories(${PROJECT_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>"
