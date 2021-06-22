@@ -2,5 +2,5 @@
 repositories:
   warehouse_ros:
     type: git
-    url: https://github.com/gleichdick/warehouse_ros
-    version: cleanup_and_md5
+    url: https://github.com/ros-planning/warehouse_ros
+    version: ros2

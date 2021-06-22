@@ -18,8 +18,8 @@ Create a file named `warehouse.repos` with the following content:
 repositories:
   warehouse_ros:
     type: git
-    url: https://github.com/gleichdick/warehouse_ros
-    version: cleanup_and_md5
+    url: https://github.com/ros-planning/warehouse_ros
+    version: ros2
   warehouse_ros_sqlite:
     type: git
     url: https://github.com/gleichdick/warehouse_ros_sqlite
@@ -50,11 +50,6 @@ You can use this plugin together with the whole MoveIt stack,
 but you may need to adapt the .launch files.
 Make sure that this plugin is loaded instead of `warehouse_ros_mongo`.
 If you're using RViz, you'll have to enter the path to your database file into the `Host` field and click on `connect`.
-
-### MoveIt patch
-
-MoveIt needs to be [adapted](https://github.com/ros-planning/moveit2/pull/513),
-otherwise RViz2 does not respect the `warehouse_plugin` parameter.
 
 ### run_move_group.launch.py
 
