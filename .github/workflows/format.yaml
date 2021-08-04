@@ -1,0 +1,29 @@
+# This is a format job. Pre-commit has a first-party GitHub action, so we use
+# that: https://github.com/pre-commit/action
+
+name: Formatting (pre-commit)
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  pre-commit:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - name: Install ament linters
+      run: |
+        sudo apt-get install -y curl gnupg2 lsb-release
+        curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+        sudo sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
+        sudo apt-get update
+        sudo apt-get install -y ros-rolling-ament-lint-common python3-pip
+        sudo pip3 install pre-commit
+    - name: Run pre-commit
+      run: |
+        source /opt/ros/rolling/setup.sh
+        pre-commit run --show-diff-on-failure --color=always -a
