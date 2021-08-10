@@ -17,11 +17,17 @@ jobs:
         env:
           - ROS_DISTRO: melodic
             ROS_REPO: main
+            CCOV: false
           - ROS_DISTRO: noetic
             ROS_REPO: main
+            AFTER_RUN_TARGET_TEST: './.ci.prepare_codecov'
+            CCOV: true
             CLANG_TIDY: pedantic
+            CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS='--coverage' -DCMAKE_CXX_FLAGS='--coverage'"
+            ADDITIONAL_DEBS: 'curl lcov grep'
           - ROS_DISTRO: noetic
             ROS_REPO: testing
+            CCOV: false
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       BASEDIR: ${{ github.workspace }}/.work
@@ -30,7 +36,7 @@ jobs:
       CLANG_TIDY_BASE_REF: "${{ github.base_ref || github.ref }}"
       UPSTREAM_WORKSPACE: warehouse_ros.rosinstall
 
-    name: ${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
+    name: ${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}${{ matrix.env.CCOV && ' + ccov' || ''}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -68,3 +74,8 @@ jobs:
           sudo find ${{ env.BASEDIR }}/target_ws -wholename '*/test_results/*' -delete
           sudo rm -rf ${{ env.BASEDIR }}/target_ws/src
           du -sh ${{ env.BASEDIR }}/target_ws
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1
+        if: ${{ matrix.env.CCOV }}
+        with:
+          files: ${{ env.BASEDIR }}/coverage.info
