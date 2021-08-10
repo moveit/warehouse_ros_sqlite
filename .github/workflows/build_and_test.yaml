@@ -28,6 +28,7 @@ jobs:
       BEFORE_CLANG_TIDY_CHECKS: (cd $TARGET_REPO_PATH; clang-tidy --list-checks)
       CACHE_PREFIX: ${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
       CLANG_TIDY_BASE_REF: "${{ github.base_ref || github.ref }}"
+      UPSTREAM_WORKSPACE: warehouse_ros.rosinstall
 
     name: ${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
     runs-on: ubuntu-latest
