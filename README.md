@@ -1,5 +1,5 @@
-[![Build status](https://github.com/gleichdick/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml/badge.svg?branch=ros2)](https://github.com/gleichdick/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml)
-[![codecov](https://codecov.io/gh/gleichdick/warehouse_ros_sqlite/branch/ros2/graph/badge.svg?token=QHPGDZM8HX)](https://codecov.io/gh/gleichdick/warehouse_ros_sqlite)
+[![Build status](https://github.com/ros-planning/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml/badge.svg?branch=ros2)](https://github.com/ros-planning/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml)
+[![codecov](https://codecov.io/gh/ros-planning/warehouse_ros_sqlite/branch/ros2/graph/badge.svg?token=QHPGDZM8HX)](https://codecov.io/gh/ros-planning/warehouse_ros_sqlite)
 
 # SQLite backend for warehouse_ros
 
@@ -22,7 +22,7 @@ repositories:
     version: ros2
   warehouse_ros_sqlite:
     type: git
-    url: https://github.com/gleichdick/warehouse_ros_sqlite
+    url: https://github.com/ros-planning/warehouse_ros_sqlite
     version: ros2
 ```
 
