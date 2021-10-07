@@ -1,5 +1,5 @@
-[![Build and Test](https://github.com/gleichdick/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml/badge.svg?branch=master)](https://github.com/gleichdick/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml)
-[![codecov](https://codecov.io/gh/gleichdick/warehouse_ros_sqlite/branch/master/graph/badge.svg?token=QHPGDZM8HX)](https://codecov.io/gh/gleichdick/warehouse_ros_sqlite)
+[![Build and Test](https://github.com/ros-planning/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml/badge.svg?branch=master)](https://github.com/ros-planning/warehouse_ros_sqlite/actions/workflows/build_and_test.yaml)
+[![codecov](https://codecov.io/gh/ros-planning/warehouse_ros_sqlite/branch/master/graph/badge.svg?token=QHPGDZM8HX)](https://codecov.io/gh/ros-planning/warehouse_ros_sqlite)
 
 # SQLite backend for warehouse_ros
 
@@ -18,7 +18,7 @@ Create a file named `warehouse.rosinstall` with the following content:
     version: kinetic-devel
 - git:
     local-name: warehouse_ros_sqlite
-    uri: https://github.com/gleichdick/warehouse_ros_sqlite.git
+    uri: https://github.com/ros-planning/warehouse_ros_sqlite.git
     version: master
 ```
 
