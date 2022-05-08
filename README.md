@@ -13,10 +13,6 @@ Create a folder which will become your catkin workspace.
 Create a file named `warehouse.rosinstall` with the following content:
 ```yaml
 - git:
-    local-name: warehouse_ros
-    uri: https://github.com/ros-planning/warehouse_ros.git
-    version: kinetic-devel
-- git:
     local-name: warehouse_ros_sqlite
     uri: https://github.com/ros-planning/warehouse_ros_sqlite.git
     version: master
