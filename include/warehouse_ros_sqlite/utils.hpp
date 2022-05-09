@@ -39,6 +39,7 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <stdexcept>
 
 extern "C" {
 struct sqlite3_stmt;
