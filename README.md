@@ -16,10 +16,6 @@ Create a folder which will become your workspace.
 Create a file named `warehouse.repos` with the following content:
 ```yaml
 repositories:
-  warehouse_ros:
-    type: git
-    url: https://github.com/ros-planning/warehouse_ros
-    version: ros2
   warehouse_ros_sqlite:
     type: git
     url: https://github.com/ros-planning/warehouse_ros_sqlite

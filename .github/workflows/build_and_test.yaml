@@ -30,7 +30,6 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       BASEDIR: ${{ github.workspace }}/.work
       CACHE_PREFIX: ${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
-      UPSTREAM_WORKSPACE: warehouse_ros_sqlite.repos
 
     name: ${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}${{ matrix.env.CCOV_UPLOAD && ' + ccov' || ''}}
     runs-on: ubuntu-latest
