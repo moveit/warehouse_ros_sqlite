@@ -2,8 +2,8 @@
 Changelog for package warehouse_ros_sqlite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2022-05-17)
+------------------
 * Add humble testing CI (`#37 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/37>`_)
 * add missing stdlib include
 * disable header include order check
