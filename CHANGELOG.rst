@@ -2,6 +2,14 @@
 Changelog for package warehouse_ros_sqlite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add humble testing CI (`#37 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/37>`_)
+* add missing stdlib include
+* disable header include order check
+* don't build warehouse_ros from source
+* Contributors: Bjar Ne, Vatan Aksoy Tezer
+
 1.0.2 (2021-10-12)
 ------------------
 * Update CMakeLists.txt
