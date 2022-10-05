@@ -39,7 +39,6 @@ include(GenerateExportHeader)
 generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_NAME}/${PROJECT_NAME}_export.h)
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} PkgConfig::SQLite3)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
