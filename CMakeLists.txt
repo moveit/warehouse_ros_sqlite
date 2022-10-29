@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   rostest
   rostime
   warehouse_ros
-  class_loader
+  pluginlib
 )
 
 
