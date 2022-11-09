@@ -34,7 +34,7 @@
 
 #include <boost/make_shared.hpp>
 #include <boost/format.hpp>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <sqlite3.h>
 #include <ros/console.h>
 #include <sstream>
