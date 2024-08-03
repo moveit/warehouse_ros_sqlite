@@ -439,6 +439,23 @@ TEST_F(ConnectionTest, appendGTE)
   }
 }
 
+TEST_F(ConnectionTest, BacktickInMeta)
+{
+  auto coll = conn_->openCollection<geometry_msgs::msg::Point>("test_db", "test_backtick");
+
+  auto metadata = coll.createMetadata();
+  metadata->append("test_`metadata", 5.0);
+
+  geometry_msgs::msg::Point msg = {};
+  coll.insert(msg, metadata);
+
+  {
+    auto query = coll.createQuery();
+    query->appendGTE("test_`metadata", 4.0);
+    EXPECT_EQ(coll.queryList(query).size(), 1);
+  }
+}
+
 TEST(Utils, Md5Validation)
 {
   const char * a = "4a842b65f413084dc2b10fb484ea7f17";

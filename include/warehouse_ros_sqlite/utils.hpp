@@ -104,7 +104,7 @@ using escaped_columnname = std::string;
 using escaped_tablename = std::string;
 inline std::string escape_identifier(const std::string & s)
 {
-  return "\"" + detail::escape<'"'>(s) + "\"";
+  return "`" + detail::escape<'`'>(s) + "`";
 }
 inline escaped_columnname escape_columnname_with_prefix(const std::string & c)
 {
