@@ -30,8 +30,9 @@
 #include <gtest/gtest.h>
 #include <warehouse_ros_sqlite/database_connection.h>
 #include <warehouse_ros_sqlite/utils.h>
-#include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Vector3.h>
 #include <ros/ros.h>
 
 class ConnectionTest : public ::testing::Test
@@ -396,6 +397,58 @@ TEST_F(ConnectionTest, Sorting)
     ASSERT_EQ(list1.size(), size_t(2));
     EXPECT_EQ(list1[0]->lookupInt("x"), 71);
     EXPECT_EQ(list1[1]->lookupInt("x"), 10);
+  }
+}
+
+TEST_F(ConnectionTest, appendGTE)
+{
+  auto coll = conn_->openCollection<geometry_msgs::Point>("test_db", "test_collection");
+
+  auto metadata = coll.createMetadata();
+  metadata->append("test_metadata", 5.0);
+
+  geometry_msgs::Point msg = {};
+  coll.insert(msg, metadata);
+
+  {
+    auto query = coll.createQuery();
+    query->appendGTE("unrelated", 4.0);
+    EXPECT_TRUE(coll.queryList(query).empty());
+  }
+
+  {
+    auto query = coll.createQuery();
+    query->appendGT("unrelated", 4.0);
+    EXPECT_TRUE(coll.queryList(query).empty());
+  }
+
+  {
+    auto query = coll.createQuery();
+    query->appendLTE("unrelated", 6.0);
+    EXPECT_TRUE(coll.queryList(query).empty());
+  }
+
+  {
+    auto query = coll.createQuery();
+    query->appendLT("unrelated", 6.0);
+    EXPECT_TRUE(coll.queryList(query).empty());
+  }
+}
+
+TEST_F(ConnectionTest, BacktickInMeta)
+{
+  auto coll = conn_->openCollection<geometry_msgs::Point>("test_db", "test_backtick");
+
+  auto metadata = coll.createMetadata();
+  metadata->append("test_`metadata", 5.0);
+
+  geometry_msgs::Point msg = {};
+  coll.insert(msg, metadata);
+
+  {
+    auto query = coll.createQuery();
+    query->appendGTE("test_`metadata", 4.0);
+    EXPECT_EQ(coll.queryList(query).size(), 1);
   }
 }
 
