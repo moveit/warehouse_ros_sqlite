@@ -1,6 +1,6 @@
 <package format="3">
   <name>warehouse_ros_sqlite</name>
-  <version>1.0.3</version>
+  <version>1.0.4</version>
   <description>
     Implementation of warehouse_ros for sqlite
   </description>

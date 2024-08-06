@@ -2,6 +2,12 @@
 Changelog for package warehouse_ros_sqlite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.4 (2024-08-06)
+------------------
+* Fix column name escaping (`#44 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/44>`_)
+* Update CI (`#41 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/41>`_)
+* Contributors: Bjar Ne, Henning Kayser, Tyler Weaver, Vatan Aksoy Tezer
+
 1.0.3 (2022-05-17)
 ------------------
 * Add humble testing CI (`#37 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/37>`_)
