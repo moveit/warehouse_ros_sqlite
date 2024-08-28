@@ -15,17 +15,13 @@ jobs:
     strategy:
       matrix:
         env:
-          - {
-            ROS_DISTRO: foxy, ROS_REPO: main, CCOV_UPLOAD: true,
-            CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS='--coverage' -DCMAKE_CXX_FLAGS='--coverage'",
-            AFTER_RUN_TARGET_TEST: './.ci.prepare_codecov',
-            ADDITIONAL_DEBS: 'curl lcov grep'
-          }
-          - {ROS_DISTRO: foxy, ROS_REPO: testing, CCOV_UPLOAD: false}
-          - {ROS_DISTRO: rolling, ROS_REPO: main, CCOV_UPLOAD: false}
+          - {ROS_DISTRO: rolling, ROS_REPO: main, CCOV_UPLOAD: true,
+             CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS='--coverage' -DCMAKE_CXX_FLAGS='--coverage'",
+             AFTER_RUN_TARGET_TEST: './.ci.prepare_codecov',
+             ADDITIONAL_DEBS: 'curl lcov grep'}
           - {ROS_DISTRO: rolling, ROS_REPO: testing, CCOV_UPLOAD: false}
-          - {ROS_DISTRO: galactic, ROS_REPO: main, CCOV_UPLOAD: false}
-          - {ROS_DISTRO: galactic, ROS_REPO: testing, CCOV_UPLOAD: false}
+          - {ROS_DISTRO: iron, ROS_REPO: main, CCOV_UPLOAD: false}
+          - {ROS_DISTRO: iron, ROS_REPO: testing, CCOV_UPLOAD: false}
           - {ROS_DISTRO: humble, ROS_REPO: main, CCOV_UPLOAD: false}
           - {ROS_DISTRO: humble, ROS_REPO: testing, CCOV_UPLOAD: false}
     env:
@@ -36,30 +32,32 @@ jobs:
     name: ${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}${{ matrix.env.CCOV_UPLOAD && ' + ccov' || ''}}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # The target directory cache doesn't include the source directory because
       # that comes from the checkout.  See "prepare target_ws for cache" task below
       - name: cache target_ws
         if: ${{ ! matrix.env.CCOV_UPLOAD }}
-        uses: pat-s/always-upload-cache@v2.1.3
+        uses: actions/cache@v4
         with:
+          save-always: true
           path: ${{ env.BASEDIR }}/target_ws
           key: target_ws-${{ env.CACHE_PREFIX }}-${{ hashFiles('**/CMakeLists.txt', '**/package.xml') }}-${{ github.run_id }}
           restore-keys: |
             target_ws-${{ env.CACHE_PREFIX }}-${{ hashFiles('**/CMakeLists.txt', '**/package.xml') }}
       - name: cache ccache
-        uses: pat-s/always-upload-cache@v2.1.3
+        uses: actions/cache@v4
         with:
+          save-always: true
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
           restore-keys: |
             ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
             ccache-${{ env.CACHE_PREFIX }}
       - name: industrial_ci
-        uses: 'ros-industrial/industrial_ci@master'
+        uses: ros-industrial/industrial_ci@master
         env: ${{ matrix.env }}
       - name: upload test artifacts (on failure)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: test-results
@@ -71,7 +69,7 @@ jobs:
           sudo find ${{ env.BASEDIR }}/target_ws -wholename '*/test_results/*' -delete
           sudo rm -rf ${{ env.BASEDIR }}/target_ws/src
           du -sh ${{ env.BASEDIR }}/target_ws
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v4
         if: ${{ matrix.env.CCOV_UPLOAD }}
         with:
           files: ${{ env.BASEDIR }}/coverage.info

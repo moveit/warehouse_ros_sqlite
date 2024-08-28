@@ -13,8 +13,7 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v4
     - name: Install ament linters
       run: |
         sudo apt-get install -y curl gnupg2 lsb-release
