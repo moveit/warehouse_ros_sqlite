@@ -411,7 +411,7 @@ TEST_F(ConnectionTest, appendGTE)
   auto metadata = coll.createMetadata();
   metadata->append("test_metadata", 5.0);
 
-  geometry_msgs::msg::Point msg = {};
+  geometry_msgs::msg::Point msg;
   coll.insert(msg, metadata);
 
   {
@@ -446,7 +446,7 @@ TEST_F(ConnectionTest, BacktickInMeta)
   auto metadata = coll.createMetadata();
   metadata->append("test_`metadata", 5.0);
 
-  geometry_msgs::msg::Point msg = {};
+  geometry_msgs::msg::Point msg;
   coll.insert(msg, metadata);
 
   {
