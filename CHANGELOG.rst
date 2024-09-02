@@ -2,6 +2,12 @@
 Changelog for package warehouse_ros_sqlite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.5 (2024-09-02)
+------------------
+* Fix package dependencies (`#51 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/51>`_)
+* Silent gcc warning
+* Contributors: Robert Haschke
+
 1.0.4 (2024-08-06)
 ------------------
 * Fix column name escaping (`#44 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/44>`_)
