@@ -11,7 +11,7 @@ on:
 jobs:
   pre-commit:
     name: Format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - name: Install ament linters
@@ -21,7 +21,10 @@ jobs:
         sudo sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
         sudo apt-get update
         sudo apt-get install -y ros-rolling-ament-lint-common python3-pip
-        sudo pip3 install pre-commit
+    - name: Install clang-format
+      run: sudo apt-get install -y clang-format-14
+    - name: Install pre-commit
+      run: sudo python -m pip install pre-commit --break-system-packages
     - name: Run pre-commit
       run: |
         source /opt/ros/rolling/setup.sh
