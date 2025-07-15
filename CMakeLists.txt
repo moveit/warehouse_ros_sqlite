@@ -38,10 +38,10 @@ target_link_libraries(${PROJECT_NAME}
   SQLite::SQLite3
 )
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
-ament_target_dependencies(${PROJECT_NAME}
-  class_loader
-  rclcpp
-  warehouse_ros
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  class_loader::class_loader
+  rclcpp::rclcpp
+  warehouse_ros::warehouse_ros
 )
 
 install(TARGETS ${PROJECT_NAME}
