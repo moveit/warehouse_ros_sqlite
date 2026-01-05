@@ -31,17 +31,16 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 include(GenerateExportHeader)
 generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_NAME}/${PROJECT_NAME}_export.hpp)
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
-target_link_libraries(${PROJECT_NAME} OpenSSL::Crypto)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
-target_link_libraries(${PROJECT_NAME}
-  SQLite::SQLite3
-)
+
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PUBLIC
   class_loader::class_loader
   rclcpp::rclcpp
   warehouse_ros::warehouse_ros
+  OpenSSL::Crypto
+  SQLite::SQLite3
 )
 
 install(TARGETS ${PROJECT_NAME}
