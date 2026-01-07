@@ -6,7 +6,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(sqlite3_vendor REQUIRED)
 find_package(SQLite3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem system thread)
 find_package(class_loader REQUIRED)
@@ -89,7 +88,6 @@ ament_export_dependencies(
   warehouse_ros
   class_loader
   OpenSSL
-  sqlite3_vendor
   SQLite3
 )
 
