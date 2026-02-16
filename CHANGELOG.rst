@@ -2,6 +2,12 @@
 Changelog for package warehouse_ros_sqlite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.6 (2026-02-16)
+------------------
+* Remove deprecated sqlite3_vendor (`#57 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/57>`_)
+* Replace deprecated ament_target_dependencies (`#55 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/55>`_)
+* Contributors: Robert Haschke, mosfet80
+
 1.0.5 (2024-09-02)
 ------------------
 * Fix package dependencies (`#51 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/51>`_)
