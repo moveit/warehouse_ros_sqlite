@@ -2,6 +2,11 @@
 Changelog for package warehouse_ros_sqlite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.7 (2026-04-20)
+------------------
+* Remove sqlite3_vendor from package.xml
+* Contributors: Robert Haschke
+
 1.0.6 (2026-02-16)
 ------------------
 * Remove deprecated sqlite3_vendor (`#57 <https://github.com/ros-planning/warehouse_ros_sqlite/issues/57>`_)
