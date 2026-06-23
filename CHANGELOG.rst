@@ -2,8 +2,8 @@
 Changelog for package warehouse_ros_sqlite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.8 (2026-06-23)
+------------------
 * Remove 'system' component from Boost package (`#61 <https://github.com/moveit/warehouse_ros_sqlite/issues/61>`_)
   According to https://www.boost.org/releases/1.89.0, the system library is header-only since Boost 1.69 and the corresponding cmake component has been dropped in 1.89.
 * CI: Update GHA versions (`#60 <https://github.com/moveit/warehouse_ros_sqlite/issues/60>`_)
