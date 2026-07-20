@@ -33,8 +33,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CUR
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
 
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PUBLIC
+  Boost::headers
   class_loader::class_loader
   rclcpp::rclcpp
   warehouse_ros::warehouse_ros
@@ -64,12 +64,10 @@ if(BUILD_TESTING)
   target_link_libraries(SchemaVersion ${PROJECT_NAME})
 
   ament_add_gtest(TestLoader test/TestLoader.cpp)
-  target_link_libraries(TestLoader ${PROJECT_NAME})
-  target_link_libraries(TestLoader ${Boost_LIBRARIES})
+  target_link_libraries(TestLoader ${PROJECT_NAME} Boost::filesystem Boost::thread)
 
   ament_add_gtest(BusyHandler test/BusyHandler.cpp)
-  target_link_libraries(BusyHandler ${PROJECT_NAME})
-  target_link_libraries(BusyHandler ${Boost_LIBRARIES})
+  target_link_libraries(BusyHandler ${PROJECT_NAME} Boost::filesystem Boost::thread)
 
   find_package(ament_lint_auto REQUIRED)
   list(APPEND AMENT_LINT_AUTO_EXCLUDE
