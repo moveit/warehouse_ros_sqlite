@@ -2,6 +2,19 @@
 Changelog for package warehouse_ros_sqlite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use Boost targets in warehouse_ros_sqlite (`#62 <https://github.com/moveit/warehouse_ros_sqlite/issues/62>`_)
+  Link the explicit Boost targets — headers for the library, filesystem and
+  thread for the tests — instead of the aggregate ``${Boost_LIBRARIES}``.
+* ci: unblock and broaden the ros2 matrix for Rolling/Resolute (`#63 <https://github.com/moveit/warehouse_ros_sqlite/issues/63>`_)
+  Set ``fail-fast: false``, move the rolling job to ``ROS_REPO: testing`` on
+  Ubuntu Resolute, and add jazzy, kilted and lyrical coverage. Drops the two
+  ``iron`` jobs; iron is EOL and this package is not released to it. The
+  previous matrix cancelled every job whenever the rolling one failed, so #62
+  reached this release having never been validated by CI.
+* Contributors: Nathan Brooks, Tobias Fischer
+
 1.0.8 (2026-06-23)
 ------------------
 * Remove 'system' component from Boost package (`#61 <https://github.com/moveit/warehouse_ros_sqlite/issues/61>`_)
