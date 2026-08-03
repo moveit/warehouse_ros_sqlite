@@ -2,8 +2,8 @@
 Changelog for package warehouse_ros_sqlite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.9 (2026-08-03)
+------------------
 * Use Boost targets in warehouse_ros_sqlite (`#62 <https://github.com/moveit/warehouse_ros_sqlite/issues/62>`_)
   Link the explicit Boost targets — headers for the library, filesystem and
   thread for the tests — instead of the aggregate ``${Boost_LIBRARIES}``.
