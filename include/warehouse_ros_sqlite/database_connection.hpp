@@ -67,7 +67,7 @@ public:
   }
 
   /// Setup the database connection. This call assumes setParams() has been previously called.
-  /// Returns true if the connection was succesfully established.
+  /// Returns true if the connection was successfully established.
   bool connect() override;
 
   /// Returns whether the database is connected.
