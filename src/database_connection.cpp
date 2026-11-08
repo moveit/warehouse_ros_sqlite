@@ -69,7 +69,7 @@ const int warehouse_ros_sqlite::DatabaseConnection::BUSY_WAIT_MILLISECS;
 const int warehouse_ros_sqlite::DatabaseConnection::BUSY_MAX_RETRIES;
 
 /// Setup the database connection. This call assumes setParams() has been previously called.
-/// Returns true if the connection was succesfully established.
+/// Returns true if the connection was successfully established.
 bool warehouse_ros_sqlite::DatabaseConnection::connect()
 {
   if (!db_) {
