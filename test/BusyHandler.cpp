@@ -125,7 +125,7 @@ TEST_F(BusyHandler, HandlerWorks)
       warehouse_ros_sqlite::sqlite3_ptr second_db(
         startSecondInsert(), warehouse_ros_sqlite::sqlite3_delete);
 
-      // tell main thread if blocking the db was successul and wake it up
+      // tell main thread if blocking the db was successful and wake it up
       second_db_setup.store(static_cast<bool>(second_db));
       lk2.unlock();
       cv.notify_one();
